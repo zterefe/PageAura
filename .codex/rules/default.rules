@@ -1,0 +1,107 @@
+# Allow creating a new local branch with git switch -c
+prefix_rule(
+    pattern = ["git", "switch", "-c"],
+    decision = "allow",
+    justification = "Allow workers to create a dedicated local feature branch.",
+    match = [
+        "git switch -c feat/track-1-p1-monorepo-base-apps-tooling",
+        "git switch -c chore/git-write-test-20260316",
+    ],
+)
+
+# Allow creating a new local branch with git checkout -b
+prefix_rule(
+    pattern = ["git", "checkout", "-b"],
+    decision = "allow",
+    justification = "Allow workers to create a dedicated local feature branch.",
+    match = [
+        "git checkout -b feat/track-2-p3-websocket-match-flow",
+    ],
+)
+
+# Allow switching to an existing local branch with git switch
+prefix_rule(
+    pattern = ["git", "switch"],
+    decision = "allow",
+    justification = "Allow workers to switch to an existing local branch.",
+    match = [
+        "git switch feat/track-1-p1-monorepo-base-apps-tooling",
+    ],
+)
+
+# Allow switching to an existing local branch with git checkout
+prefix_rule(
+    pattern = ["git", "checkout"],
+    decision = "allow",
+    justification = "Allow workers to switch to an existing local branch.",
+    match = [
+        "git checkout feat/track-2-p3-websocket-match-flow",
+    ],
+)
+
+# Allow checking git status
+prefix_rule(
+    pattern = ["git", "status"],
+    decision = "allow",
+    justification = "Allow workers to inspect local repository status.",
+    match = [
+        "git status",
+        "git status --short",
+    ],
+)
+
+# Allow staging files
+prefix_rule(
+    pattern = ["git", "add"],
+    decision = "allow",
+    justification = "Allow workers to stage changes for a local commit.",
+    match = [
+        "git add .",
+        "git add package.json",
+    ],
+)
+
+# Allow local commits
+prefix_rule(
+    pattern = ["git", "commit"],
+    decision = "allow",
+    justification = "Allow workers to create local commits only.",
+    match = [
+        "git commit -m feat: complete track-1 p1",
+        "git commit --no-verify -m chore: scaffold workspace",
+    ],
+)
+
+# Block pushes
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "forbidden",
+    justification = "Do not push from this environment.",
+    match = [
+        "git push",
+        "git push -u origin feat/track-1-p1-monorepo-base-apps-tooling",
+    ],
+)
+
+# Block fetch / pull / clone
+prefix_rule(
+    pattern = ["git", ["pull", "fetch", "clone"]],
+    decision = "forbidden",
+    justification = "Do not use networked git commands from this environment.",
+    match = [
+        "git pull",
+        "git fetch origin",
+        "git clone https://github.com/example/repo.git",
+    ],
+)
+
+# Block GitHub CLI
+prefix_rule(
+    pattern = ["gh"],
+    decision = "forbidden",
+    justification = "Do not use GitHub CLI or create PRs from this environment.",
+    match = [
+        "gh pr create",
+        "gh auth status",
+    ],
+)
