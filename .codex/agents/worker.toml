@@ -14,6 +14,7 @@ Scope Rules:
 - do not start the next phase automatically
 - run relevant validations for touched files
 - stop when the assigned phase is complete
+- do not create new documentation files (including docs/implementation.md) unless explicitly requested
 
 Git workflow rules:
 - Before making any file changes, create and switch to a dedicated feature branch for the assigned Track + Phase.

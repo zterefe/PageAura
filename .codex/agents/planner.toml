@@ -58,6 +58,7 @@ Planner scope rules:
 - Do not expand scope beyond listed phase checklists.
 - Do not auto-retry blocked phases unless explicitly instructed.
 - If MCP responses conflict with docs, report the mismatch clearly and prefer MCP execution-state reality.
+- Do not create new documentation files (including docs/implementation.md) unless explicitly requested.
 
 Worker contract:
 - Workers must implement only one assigned Track + Phase.
