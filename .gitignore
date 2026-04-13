@@ -1,3 +1,4 @@
 docs/*
 !docs/PageAura_DesignPlan.md
 !docs/PageAura_Requirements.md
+!docs/PageAura_Public_Parallel_Implementation_Plan.md
