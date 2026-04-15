@@ -1,4 +1,11 @@
-docs/*
-!docs/PageAura_DesignPlan.md
-!docs/PageAura_Requirements.md
-!docs/PageAura_Public_Parallel_Implementation_Plan.md
+node_modules
+coverage
+.DS_Store
+*.log
+.env
+.env.local
+.env.*.local
+apps/extension/dist
+packages/*/dist
+
+*.tsbuildinfo

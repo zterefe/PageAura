@@ -1,0 +1,25 @@
+{
+  "name": "pageaura",
+  "private": true,
+  "version": "0.1.0",
+  "description": "PageAura public monorepo",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -ws",
+    "build:extension": "npm run build -w @pageaura/extension",
+    "dev:extension": "npm run dev -w @pageaura/extension",
+    "typecheck": "npm run typecheck -ws",
+    "lint": "prettier --check \"**/*.{ts,tsx,js,cjs,mjs,json,md,yml,yaml}\"",
+    "format": "prettier --write \"**/*.{ts,tsx,js,cjs,mjs,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,cjs,mjs,json,md,yml,yaml}\""
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "prettier": "^3.5.3",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.3"
+  }
+}
