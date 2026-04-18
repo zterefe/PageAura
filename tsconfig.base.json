@@ -10,12 +10,6 @@
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
-    "sourceMap": true,
-    "baseUrl": ".",
-    "paths": {
-      "@pageaura/shared-types": ["packages/shared-types/dist/index.d.ts"],
-      "@pageaura/dom-snapshot": ["packages/dom-snapshot/dist/index.d.ts"],
-      "@pageaura/validator": ["packages/validator/dist/index.d.ts"]
-    }
+    "sourceMap": true
   }
 }
