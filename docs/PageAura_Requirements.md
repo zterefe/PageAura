@@ -1,9 +1,11 @@
 # PageAura MVP Requirements
 
 ## Goal
+
 Build a Chrome Extension that enhances poorly designed web pages using AI‑generated enhancement plans.
 
 ## Core Principles
+
 - AI must generate enhancement plans (not optional)
 - Enhancements must be assistive, minimal, reversible
 - No arbitrary AI‑generated JS execution
@@ -11,6 +13,7 @@ Build a Chrome Extension that enhances poorly designed web pages using AI‑gene
 - Privacy‑first (local processing)
 
 ## MVP Features
+
 1. DOM Snapshot Extraction
 2. AI Enhancement Planner
 3. Enhancement Validator
@@ -23,6 +26,7 @@ Build a Chrome Extension that enhances poorly designed web pages using AI‑gene
 10. Safe reversible enhancements
 
 ## Non‑Goals (MVP)
+
 - Screenshot analysis
 - Backend infra
 - User accounts

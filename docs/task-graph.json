@@ -1,0 +1,807 @@
+{
+  "repoPolicy": "Execute work in phased waves. Never start a phase until all dependencies are REVIEW_PASSED or MERGED. After each phase, pause for validation and commit/push before continuing.",
+  "taskGraph": {
+    "tracks": [
+      {
+        "id": "track-1",
+        "title": "Project Foundation / Repo Setup",
+        "phases": ["p1", "p2"]
+      },
+      {
+        "id": "track-2",
+        "title": "Extension Shell + Manifest + Messaging",
+        "phases": ["p1", "p2"]
+      },
+      {
+        "id": "track-3",
+        "title": "DOM Snapshot Engine",
+        "phases": ["p1", "p2"]
+      },
+      {
+        "id": "track-4",
+        "title": "Planner Adapter + Public Planner Interface",
+        "phases": ["p1", "p2"]
+      },
+      {
+        "id": "track-5",
+        "title": "Validation Engine",
+        "phases": ["p1", "p2"]
+      },
+      {
+        "id": "track-6",
+        "title": "Compiler + Runtime Ops",
+        "phases": ["p1", "p2"]
+      },
+      {
+        "id": "track-7",
+        "title": "UI Overlay Runtime",
+        "phases": ["p1", "p2"]
+      },
+      {
+        "id": "track-8",
+        "title": "Storage + Site Settings",
+        "phases": ["p1", "p2"]
+      },
+      {
+        "id": "track-9",
+        "title": "Popup / Options Product UI",
+        "phases": ["p1", "p2"]
+      },
+      {
+        "id": "track-10",
+        "title": "Route Changes + Lifecycle Stability",
+        "phases": ["p1", "p2"]
+      },
+      {
+        "id": "track-11",
+        "title": "Testing + Fixtures",
+        "phases": ["p1", "p2"]
+      },
+      {
+        "id": "track-12",
+        "title": "Release Packaging + Open Source Readiness",
+        "phases": ["p1", "p2"]
+      }
+    ],
+    "phases": [
+      {
+        "trackId": "track-1",
+        "phaseId": "p1",
+        "title": "Monorepo/workspace + base extension scaffold + tooling",
+        "scope": "Initialize the public monorepo/workspace, base extension scaffold, and shared development tooling conventions.",
+        "checklist": [
+          "Create monorepo/workspace structure",
+          "Add apps/extension Chrome Extension MV3 + TypeScript scaffold",
+          "Add packages/shared-types",
+          "Add packages/dom-snapshot",
+          "Add packages/validator",
+          "Add shared linting, formatting, and TypeScript config",
+          "Add .env.example and local setup docs"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Requirements.md"
+        ],
+        "acceptanceCriteria": [
+          "Workspace installs successfully",
+          "Extension dev build runs locally",
+          "Typecheck and lint pass",
+          "Package imports resolve correctly"
+        ],
+        "dependencies": []
+      },
+      {
+        "trackId": "track-1",
+        "phaseId": "p2",
+        "title": "Shared contracts package",
+        "scope": "Define and export shared DTOs/contracts/schemas used across snapshot, planner, validator, compiler, runtime, and messaging boundaries.",
+        "checklist": [
+          "Add shared DTOs for page snapshots, actions, sections, metrics",
+          "Add enhancement plan contracts",
+          "Add runtime op contracts",
+          "Add settings and message payload contracts",
+          "Add validation schemas for all top-level serialized objects",
+          "Export contracts for all public packages"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Detailed_Design_Doc.md"
+        ],
+        "acceptanceCriteria": [
+          "Shared DTOs and enhancement/runtime/message contracts are defined",
+          "Validation schemas exist for top-level serialized objects",
+          "Contracts are exported for all public packages",
+          "Other tracks can depend on shared contracts without drift"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-1",
+            "phaseId": "p1"
+          }
+        ]
+      },
+      {
+        "trackId": "track-2",
+        "phaseId": "p1",
+        "title": "MV3 manifest + service worker + content script wiring",
+        "scope": "Build extension shell bootstrapping with MV3 manifest, background worker, content script, and foundational message routing.",
+        "checklist": [
+          "Add MV3 manifest",
+          "Register content script",
+          "Register service worker",
+          "Add message routing between content script and service worker",
+          "Add site hostname detection and page eligibility checks",
+          "Add local development startup instructions"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Requirements.md"
+        ],
+        "acceptanceCriteria": [
+          "Extension loads in Chrome",
+          "Content script runs on target pages",
+          "Service worker receives messages",
+          "Message roundtrip succeeds"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-1",
+            "phaseId": "p1"
+          }
+        ]
+      },
+      {
+        "trackId": "track-2",
+        "phaseId": "p2",
+        "title": "Popup shell + options shell + settings plumbing",
+        "scope": "Create popup/options shell UIs and connect settings read/write through the extension service worker.",
+        "checklist": [
+          "Add popup app scaffold",
+          "Add options page scaffold",
+          "Add current-site enabled/disabled toggle",
+          "Add mode selector (safe, enhanced, experimental)",
+          "Add shared settings read/write flow through service worker",
+          "Show current page enhancement summary placeholder"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Detailed_Architecture_Diagram.md"
+        ],
+        "acceptanceCriteria": [
+          "Popup and options shells render",
+          "Site toggle and mode selector are wired",
+          "Settings read/write flow works through service worker",
+          "Enhancement summary placeholder is visible"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-2",
+            "phaseId": "p1"
+          }
+        ]
+      },
+      {
+        "trackId": "track-3",
+        "phaseId": "p1",
+        "title": "Snapshot core extraction",
+        "scope": "Implement normalized DOM snapshot extraction for metadata, actions, sections, and metrics suitable for planner input.",
+        "checklist": [
+          "Extract page metadata (URL, hostname, title)",
+          "Extract interactive elements into ActionNode[]",
+          "Extract sections/headings into SectionNode[]",
+          "Extract page metrics",
+          "Ignore hidden elements and user-entered values",
+          "Cap large element sets for planner safety"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Requirements.md"
+        ],
+        "acceptanceCriteria": [
+          "Snapshot returns expected metadata on sample pages",
+          "Action extraction excludes hidden elements",
+          "Section extraction returns stable selectors",
+          "Snapshot payload stays within expected size"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-1",
+            "phaseId": "p2"
+          }
+        ]
+      },
+      {
+        "trackId": "track-3",
+        "phaseId": "p2",
+        "title": "Heuristics + selector hardening",
+        "scope": "Improve snapshot quality with page-type heuristics, stable selectors, deduplication, fixture tests, and debug visibility.",
+        "checklist": [
+          "Add page-type hints",
+          "Add search/layout/navigation heuristics",
+          "Improve selector stability rules",
+          "Deduplicate similar actions",
+          "Add fixture-based snapshot tests",
+          "Add debug logging for snapshot output"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Detailed_Design_Doc.md"
+        ],
+        "acceptanceCriteria": [
+          "Page-type heuristics and selector hardening are implemented",
+          "Similar actions are deduplicated",
+          "Fixture-based snapshot tests exist",
+          "Snapshot debug logging is available"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-3",
+            "phaseId": "p1"
+          }
+        ]
+      },
+      {
+        "trackId": "track-4",
+        "phaseId": "p1",
+        "title": "Planner interface + adapter contract",
+        "scope": "Define public planner abstractions, deterministic mock planner, parsing, capabilities, and planner error contract.",
+        "checklist": [
+          "Add Planner interface",
+          "Add planner input builder",
+          "Add planner response parser",
+          "Add planner capability config",
+          "Add mock planner returning deterministic plans",
+          "Add planner error contract"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Requirements.md"
+        ],
+        "acceptanceCriteria": [
+          "Mock planner returns valid plan",
+          "Planner adapter handles success and failure",
+          "Planner capabilities are passed correctly",
+          "Invalid planner output is surfaced cleanly"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-1",
+            "phaseId": "p2"
+          }
+        ]
+      },
+      {
+        "trackId": "track-4",
+        "phaseId": "p2",
+        "title": "Planner execution flow inside content script",
+        "scope": "Integrate planner calls into content pipeline with timeout/retry, summary logging, and concurrency guards.",
+        "checklist": [
+          "Build planner input from snapshot",
+          "Call planner adapter from content pipeline",
+          "Add timeout and retry policy",
+          "Add plan summary logging for popup",
+          "Guard against duplicate concurrent planner runs"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Detailed_Architecture_Diagram.md"
+        ],
+        "acceptanceCriteria": [
+          "Planner input is built from snapshots in content flow",
+          "Planner adapter is invoked from pipeline",
+          "Timeout/retry policy is applied",
+          "Duplicate concurrent planner runs are prevented"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-4",
+            "phaseId": "p1"
+          },
+          {
+            "trackId": "track-3",
+            "phaseId": "p1"
+          }
+        ]
+      },
+      {
+        "trackId": "track-5",
+        "phaseId": "p1",
+        "title": "Schema + token validation",
+        "scope": "Validate planner outputs against schema, supported types, required fields, numeric token bounds, and count limits.",
+        "checklist": [
+          "Validate top-level enhancement plan schema",
+          "Validate supported enhancement types",
+          "Validate required fields per enhancement type",
+          "Validate bounded numeric tokens",
+          "Validate max counts (toolbar actions, jump links)",
+          "Return structured validation errors"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Requirements.md"
+        ],
+        "acceptanceCriteria": [
+          "Invalid schema is rejected",
+          "Out-of-range tokens are rejected or clamped",
+          "Unknown enhancement types are rejected",
+          "Validation errors include useful paths/messages"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-1",
+            "phaseId": "p2"
+          },
+          {
+            "trackId": "track-4",
+            "phaseId": "p1"
+          }
+        ]
+      },
+      {
+        "trackId": "track-5",
+        "phaseId": "p2",
+        "title": "Selector + safety validation",
+        "scope": "Add runtime-aware selector and behavior safety checks to produce a SafeEnhancementPlan.",
+        "checklist": [
+          "Validate selectors against current DOM",
+          "Reject destructive-looking promoted actions",
+          "Validate behavior types (focus, scroll, click)",
+          "Skip missing optional targets safely",
+          "Produce SafeEnhancementPlan"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Detailed_Design_Doc.md"
+        ],
+        "acceptanceCriteria": [
+          "Selectors are validated against current DOM",
+          "Unsafe promoted actions are rejected",
+          "Behavior types are validated",
+          "SafeEnhancementPlan output is produced"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-5",
+            "phaseId": "p1"
+          }
+        ]
+      },
+      {
+        "trackId": "track-6",
+        "phaseId": "p1",
+        "title": "Runtime op contracts + compiler core",
+        "scope": "Define runtime operation model and compile supported enhancement types into deterministic runtime ops.",
+        "checklist": [
+          "Add runtime op types",
+          "Add compiler for insert_toolbar",
+          "Add compiler for jump_links",
+          "Add compiler for theme_patch",
+          "Add compiler for style_patch",
+          "Add defaults normalization in compiler"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Requirements.md"
+        ],
+        "acceptanceCriteria": [
+          "Safe plan compiles to deterministic op list",
+          "Runtime ops are stable across repeated runs",
+          "Compiler handles missing optional fields",
+          "Each supported enhancement type is compiled"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-1",
+            "phaseId": "p2"
+          },
+          {
+            "trackId": "track-5",
+            "phaseId": "p1"
+          }
+        ]
+      },
+      {
+        "trackId": "track-6",
+        "phaseId": "p2",
+        "title": "Cleanup model + op execution planning",
+        "scope": "Add execution planning semantics for cleanup, batching, rerun/replace lifecycle, and cleanup-sensitive compiler tests.",
+        "checklist": [
+          "Add cleanup registration contracts",
+          "Add plan execution handle",
+          "Add op batching rules",
+          "Add re-run/replace semantics for SPA navigation",
+          "Add compiler tests for cleanup-sensitive scenarios"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Detailed_Architecture_Diagram.md"
+        ],
+        "acceptanceCriteria": [
+          "Cleanup registration and execution handle contracts are defined",
+          "Op batching and rerun/replace semantics are implemented",
+          "Compiler tests cover cleanup-sensitive scenarios",
+          "Execution planning supports SPA-style reapplication"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-6",
+            "phaseId": "p1"
+          }
+        ]
+      },
+      {
+        "trackId": "track-7",
+        "phaseId": "p1",
+        "title": "Overlay root + toolbar + jump links",
+        "scope": "Implement assistive overlay runtime with mount root, toolbar/jump link execution, and robust cleanup behavior.",
+        "checklist": [
+          "Create overlay mount root",
+          "Add toolbar executor",
+          "Add jump links executor",
+          "Add safe event binding for focus/scroll/click actions",
+          "Add cleanup support for inserted nodes and listeners",
+          "Ensure duplicate runs replace prior overlay cleanly"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Requirements.md"
+        ],
+        "acceptanceCriteria": [
+          "Toolbar renders on eligible pages",
+          "Jump links scroll to correct sections",
+          "Duplicate overlays do not accumulate",
+          "Cleanup removes UI correctly"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-6",
+            "phaseId": "p1"
+          }
+        ]
+      },
+      {
+        "trackId": "track-7",
+        "phaseId": "p2",
+        "title": "Theme patch + style patch runtime",
+        "scope": "Implement reversible theme/style patch execution with token normalization, semantic resolvers, and runtime clamping.",
+        "checklist": [
+          "Add theme patch executor",
+          "Add style patch executor",
+          "Add token-to-CSS compiler",
+          "Add semantic target resolvers",
+          "Apply classes/style tags in reversible way",
+          "Clamp and normalize runtime-applied tokens"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Detailed_Design_Doc.md"
+        ],
+        "acceptanceCriteria": [
+          "Theme and style patch executors are implemented",
+          "Token-to-CSS compilation and semantic resolvers are in place",
+          "Applied classes/style tags are reversible",
+          "Runtime-applied tokens are clamped and normalized"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-7",
+            "phaseId": "p1"
+          }
+        ]
+      },
+      {
+        "trackId": "track-8",
+        "phaseId": "p1",
+        "title": "Settings model + persistence",
+        "scope": "Implement global/per-site settings persistence and lookup behavior using chrome.storage.local.",
+        "checklist": [
+          "Add global settings model",
+          "Add per-site settings model",
+          "Add storage read/write utilities",
+          "Add enabled/disabled lookup by hostname",
+          "Add mode resolution (global default + site override)",
+          "Add last plan summary persistence"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Requirements.md"
+        ],
+        "acceptanceCriteria": [
+          "Global settings persist",
+          "Per-site settings persist",
+          "Plan summary is readable after page run",
+          "Disabled sites skip enhancement pipeline"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-1",
+            "phaseId": "p2"
+          }
+        ]
+      },
+      {
+        "trackId": "track-8",
+        "phaseId": "p2",
+        "title": "Dismissals + execution memory",
+        "scope": "Persist dismissals, execution signatures, debug mode, and expose relevant stored state to UI surfaces.",
+        "checklist": [
+          "Add dismissed enhancement tracking",
+          "Add recent execution hash or plan signature",
+          "Prevent unnecessary repeat application loops",
+          "Add debug mode persistence",
+          "Surface stored values to popup/options UI"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Detailed_Architecture_Diagram.md"
+        ],
+        "acceptanceCriteria": [
+          "Dismissed enhancements and execution signatures are stored",
+          "Repeat application loops are reduced via execution memory",
+          "Debug mode persistence is implemented",
+          "Stored values are accessible to popup/options UI"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-8",
+            "phaseId": "p1"
+          }
+        ]
+      },
+      {
+        "trackId": "track-9",
+        "phaseId": "p1",
+        "title": "Popup product UI",
+        "scope": "Build MVP popup controls for site status, mode, plan summary, rerun/remove actions, and planner status.",
+        "checklist": [
+          "Build current-site status card",
+          "Show enable/disable toggle",
+          "Show mode selector",
+          "Show last enhancement summary",
+          "Add remove enhancements / rerun action",
+          "Add planner status indicator"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Detailed_Design_Doc.md"
+        ],
+        "acceptanceCriteria": [
+          "Popup reads active tab hostname",
+          "Toggle updates current site setting",
+          "Mode changes persist",
+          "Summary updates after successful run"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-2",
+            "phaseId": "p2"
+          },
+          {
+            "trackId": "track-8",
+            "phaseId": "p1"
+          }
+        ]
+      },
+      {
+        "trackId": "track-9",
+        "phaseId": "p2",
+        "title": "Options page + developer controls",
+        "scope": "Extend options UI with global defaults, debug/developer controls, planner selection, site overrides, and reset flow.",
+        "checklist": [
+          "Add global defaults UI",
+          "Add debug mode toggle",
+          "Add planner/mock planner selection for local dev",
+          "Add list of stored site overrides",
+          "Add reset-to-defaults action"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Detailed_Architecture_Diagram.md"
+        ],
+        "acceptanceCriteria": [
+          "Options UI supports global defaults and debug mode",
+          "Planner/mock planner selection is available",
+          "Stored site overrides are visible",
+          "Reset-to-defaults action works"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-9",
+            "phaseId": "p1"
+          },
+          {
+            "trackId": "track-8",
+            "phaseId": "p2"
+          }
+        ]
+      },
+      {
+        "trackId": "track-10",
+        "phaseId": "p1",
+        "title": "Rerun lifecycle + debounce",
+        "scope": "Implement stable rerun lifecycle for SPA navigation with route observation, debounce, and cleanup-before-reapply behavior.",
+        "checklist": [
+          "Detect SPA route changes",
+          "Add MutationObserver-based rerun trigger",
+          "Debounce expensive reruns",
+          "Cleanup prior execution before reapply",
+          "Avoid planner double-execution on initial page load"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Detailed_Architecture_Diagram.md"
+        ],
+        "acceptanceCriteria": [
+          "Rerun occurs on route change",
+          "Previous UI is cleaned up before reapply",
+          "Debounce prevents duplicate rapid runs",
+          "Static pages are not reprocessed excessively"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-4",
+            "phaseId": "p2"
+          },
+          {
+            "trackId": "track-7",
+            "phaseId": "p1"
+          }
+        ]
+      },
+      {
+        "trackId": "track-10",
+        "phaseId": "p2",
+        "title": "Stability hardening + fallback handling",
+        "scope": "Harden lifecycle behavior with timeout handling, DOM signature checks, partial-failure recovery, and no-op safety paths.",
+        "checklist": [
+          "Handle planner timeouts cleanly",
+          "Skip rerun when DOM signature has not materially changed",
+          "Recover from partial execution failures",
+          "Add safe no-op path when page becomes ineligible",
+          "Add lifecycle debug logs"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Detailed_Design_Doc.md"
+        ],
+        "acceptanceCriteria": [
+          "Planner timeouts are handled cleanly",
+          "DOM signature checks prevent unnecessary reruns",
+          "Partial execution failures recover safely",
+          "Lifecycle debug logs and ineligible-page no-op path are implemented"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-10",
+            "phaseId": "p1"
+          }
+        ]
+      },
+      {
+        "trackId": "track-11",
+        "phaseId": "p1",
+        "title": "Unit tests for contracts, validator, compiler",
+        "scope": "Add deterministic fixture-based unit tests for contracts, validator behavior, compiler stability, and token/selector bounds.",
+        "checklist": [
+          "Add contract tests for shared types/schemas",
+          "Add validator unit tests",
+          "Add compiler unit tests",
+          "Add token clamping tests",
+          "Add selector validation tests with synthetic DOM fixtures"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Requirements.md"
+        ],
+        "acceptanceCriteria": [
+          "Test suite runs locally",
+          "Invalid plans fail as expected",
+          "Compiler snapshots are stable",
+          "Token bounds behave correctly"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-5",
+            "phaseId": "p2"
+          },
+          {
+            "trackId": "track-6",
+            "phaseId": "p2"
+          }
+        ]
+      },
+      {
+        "trackId": "track-11",
+        "phaseId": "p2",
+        "title": "Manual QA fixtures + demo pages",
+        "scope": "Add representative saved fixtures and manual QA checklists for legacy/classified, docs/article, and admin/table-heavy page archetypes.",
+        "checklist": [
+          "Add saved HTML/DOM fixtures for ugly legacy pages",
+          "Add Craigslist-like fixture test case",
+          "Add docs/article fixture",
+          "Add admin/table-heavy fixture",
+          "Add manual QA checklist per fixture"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Detailed_Design_Doc.md"
+        ],
+        "acceptanceCriteria": [
+          "Saved fixture set exists for targeted page archetypes",
+          "Fixture test cases cover classified, docs/article, and admin/table-heavy pages",
+          "Manual QA checklist exists per fixture",
+          "Fixtures support repeatable runtime validation"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-11",
+            "phaseId": "p1"
+          }
+        ]
+      },
+      {
+        "trackId": "track-12",
+        "phaseId": "p1",
+        "title": "Community build + docs",
+        "scope": "Prepare public community build/release pipeline and core open-source documentation for setup, architecture, contracts, and contribution.",
+        "checklist": [
+          "Add production build pipeline",
+          "Add release zip generation",
+          "Add README setup and architecture links",
+          "Add contribution guide",
+          "Add public package boundaries documentation",
+          "Add example mock planner demo instructions"
+        ],
+        "requiredDocs": ["docs/PageAura_Public_Parallel_Implementation_Plan.md", "README.md"],
+        "acceptanceCriteria": [
+          "Build artifact is generated",
+          "Fresh clone setup works from docs",
+          "Community demo works without private access",
+          "Public docs match current code layout"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-2",
+            "phaseId": "p2"
+          },
+          {
+            "trackId": "track-11",
+            "phaseId": "p1"
+          }
+        ]
+      },
+      {
+        "trackId": "track-12",
+        "phaseId": "p2",
+        "title": "Chrome Web Store prep + maintenance scripts",
+        "scope": "Finalize release operations with versioning/changelog/store-prep assets, maintenance scripts, and issue templates.",
+        "checklist": [
+          "Add extension packaging versioning",
+          "Add changelog flow",
+          "Add store listing asset checklist",
+          "Add repo maintenance scripts",
+          "Add issue templates for bug reports and enhancement requests"
+        ],
+        "requiredDocs": [
+          "docs/PageAura_Public_Parallel_Implementation_Plan.md",
+          "docs/PageAura_Detailed_Design_Doc.md"
+        ],
+        "acceptanceCriteria": [
+          "Extension packaging versioning is defined",
+          "Changelog flow is documented",
+          "Store listing asset checklist exists",
+          "Maintenance scripts and issue templates are in place"
+        ],
+        "dependencies": [
+          {
+            "trackId": "track-12",
+            "phaseId": "p1"
+          }
+        ]
+      }
+    ]
+  },
+  "states": [],
+  "workerResults": [],
+  "reviewResults": []
+}

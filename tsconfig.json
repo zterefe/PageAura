@@ -1,0 +1,9 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/shared-types" },
+    { "path": "packages/dom-snapshot" },
+    { "path": "packages/validator" },
+    { "path": "apps/extension" }
+  ]
+}
