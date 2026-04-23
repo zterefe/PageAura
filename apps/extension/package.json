@@ -4,11 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "clean": "rimraf dist tsconfig.build.tsbuildinfo",
-    "build": "npm run clean && tsc -p tsconfig.build.json && node ./scripts/copy-static.mjs",
-    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "clean": "rimraf dist",
+    "build": "npm run clean && node ./scripts/build.mjs",
+    "dev": "npm run clean && node ./scripts/build.mjs --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "prettier --check \"src/**/*.ts\""
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.3"
   },
   "dependencies": {
     "@pageaura/dom-snapshot": "0.1.0",
