@@ -24,6 +24,8 @@ export type ContentBootstrapResponse = {
   receivedAt: string;
   hostname: string;
   eligible: boolean;
+  enhancementEnabled: boolean;
+  mode: 'safe' | 'enhanced' | 'experimental';
 };
 
 export type PageAuraMessage = ContentBootstrapMessage;

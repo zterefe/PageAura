@@ -6,6 +6,11 @@ import {
   PAGE_AURA_MESSAGE_TYPE,
   type ContentBootstrapResponse,
 } from '../shared/messaging';
+import {
+  isEnhancementEnabledForHostname,
+  readSettingsState,
+  resolveEnhancementModeForHostname,
+} from './settingsStorage';
 
 chrome.runtime.onInstalled.addListener(() => {
   const packageSummary = [
@@ -14,6 +19,7 @@ chrome.runtime.onInstalled.addListener(() => {
     VALIDATOR_PACKAGE.packageName,
   ].join(', ');
 
+  void readSettingsState();
   console.info(`[PageAura] scaffold ready with: ${packageSummary}`);
 });
 
@@ -23,20 +29,31 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 
   if (message.type === PAGE_AURA_MESSAGE_TYPE.CONTENT_BOOTSTRAP) {
-    console.info('[PageAura] bootstrap message received', {
-      hostname: message.payload.hostname,
-      eligible: message.payload.eligible,
-      reason: message.payload.reason,
-    });
+    void (async () => {
+      const enhancementEnabled = await isEnhancementEnabledForHostname(message.payload.hostname);
+      const mode = await resolveEnhancementModeForHostname(message.payload.hostname);
+      const eligible = message.payload.eligible && enhancementEnabled;
 
-    const response: ContentBootstrapResponse = {
-      ok: true,
-      receivedAt: new Date().toISOString(),
-      hostname: message.payload.hostname,
-      eligible: message.payload.eligible,
-    };
+      console.info('[PageAura] bootstrap message received', {
+        hostname: message.payload.hostname,
+        eligible,
+        reason: message.payload.reason,
+        enhancementEnabled,
+        mode,
+      });
 
-    sendResponse(response);
+      const response: ContentBootstrapResponse = {
+        ok: true,
+        receivedAt: new Date().toISOString(),
+        hostname: message.payload.hostname,
+        eligible,
+        enhancementEnabled,
+        mode,
+      };
+
+      sendResponse(response);
+    })();
+
     return true;
   }
 
