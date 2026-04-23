@@ -8,7 +8,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "tsc -b tsconfig.json",
+    "build": "npm run build -w @pageaura/shared-types -w @pageaura/dom-snapshot -w @pageaura/validator -w @pageaura/extension",
     "build:extension": "npm run build -w @pageaura/extension",
     "dev:extension": "npm run dev -w @pageaura/extension",
     "typecheck": "npm run typecheck -ws",
