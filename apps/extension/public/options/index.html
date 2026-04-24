@@ -8,7 +8,26 @@
   <body>
     <main>
       <h1>PageAura Options</h1>
-      <p>Options scaffold initialized.</p>
+
+      <label for="hostname-input">Hostname</label>
+      <input id="hostname-input" type="text" placeholder="example.com" />
+
+      <label>
+        <input id="options-site-enabled" type="checkbox" />
+        Enable enhancements for hostname
+      </label>
+
+      <label for="options-mode-selector">Mode</label>
+      <select id="options-mode-selector">
+        <option value="safe">safe</option>
+        <option value="enhanced">enhanced</option>
+        <option value="experimental">experimental</option>
+      </select>
+
+      <button id="save-button" type="button">Save</button>
+      <p id="save-status">Ready.</p>
     </main>
+
+    <script src="options.js"></script>
   </body>
 </html>
