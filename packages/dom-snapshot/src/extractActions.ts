@@ -34,16 +34,27 @@ const resolveActionKind = (element: Element): PageActionKind => {
   return 'click';
 };
 
-const resolveActionLabel = (element: Element): string => {
-  const elementLabel =
-    element.getAttribute('aria-label') ??
-    element.getAttribute('title') ??
-    element.getAttribute('placeholder') ??
-    element.textContent ??
-    element.getAttribute('name') ??
-    element.tagName.toLowerCase();
+const firstNonEmpty = (...values: Array<string | null | undefined>): string | null => {
+  for (const value of values) {
+    const normalized = value?.trim();
+    if (normalized) {
+      return normalized;
+    }
+  }
+  return null;
+};
 
-  return elementLabel.trim().replace(/\s+/g, ' ').slice(0, MAX_LABEL_LENGTH);
+
+const resolveActionLabel = (element: Element): string => {
+  const elementLabel = firstNonEmpty(
+    element.getAttribute('aria-label'),
+    element.getAttribute('title'),
+    element.getAttribute('placeholder'),
+    element.textContent,
+    element.getAttribute('name'),
+    element.tagName.toLowerCase());
+
+  return (elementLabel ?? '').replace(/\s+/g, ' ').slice(0, MAX_LABEL_LENGTH);
 };
 
 const isDisabled = (element: Element): boolean => {

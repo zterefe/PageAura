@@ -23,9 +23,14 @@ export const createStableSelector = (element: Element): string => {
     return `${tagName}${classList}`;
   }
 
-  const namedAttribute = element.getAttribute('name') ?? element.getAttribute('data-testid');
+  const namedAttribute = element.getAttribute('name');
   if (namedAttribute) {
     return `${tagName}[name="${CSS.escape(namedAttribute)}"]`;
+  }
+
+  const testIdAttribute = element.getAttribute('data-testid');
+  if (testIdAttribute) {
+    return `${tagName}[data-testid="${CSS.escape(testIdAttribute)}"]`;
   }
 
   const parent = element.parentElement;
