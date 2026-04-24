@@ -34,16 +34,44 @@ const contentOptions = {
   format: 'iife',
 };
 
+const popupOptions = {
+  ...commonBuildOptions,
+  entryPoints: ['src/popup/index.ts'],
+  outfile: 'dist/popup/popup.js',
+  platform: 'browser',
+  format: 'iife',
+};
+
+const optionsPageOptions = {
+  ...commonBuildOptions,
+  entryPoints: ['src/options/index.ts'],
+  outfile: 'dist/options/options.js',
+  platform: 'browser',
+  format: 'iife',
+};
+
 await copyStaticAssets();
 
 if (!isWatchMode) {
-  await Promise.all([build(backgroundOptions), build(contentOptions)]);
+  await Promise.all([
+    build(backgroundOptions),
+    build(contentOptions),
+    build(popupOptions),
+    build(optionsPageOptions),
+  ]);
   process.exit(0);
 }
 
 const backgroundContext = await context(backgroundOptions);
 const contentContext = await context(contentOptions);
+const popupContext = await context(popupOptions);
+const optionsContext = await context(optionsPageOptions);
 
-await Promise.all([backgroundContext.watch(), contentContext.watch()]);
+await Promise.all([
+  backgroundContext.watch(),
+  contentContext.watch(),
+  popupContext.watch(),
+  optionsContext.watch(),
+]);
 
 console.info('[PageAura] extension build watching for changes...');
