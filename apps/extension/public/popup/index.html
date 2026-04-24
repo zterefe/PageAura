@@ -8,7 +8,24 @@
   <body>
     <main>
       <h1>PageAura</h1>
-      <p>Extension scaffold initialized.</p>
+      <p>Current site: <strong id="hostname">loading...</strong></p>
+
+      <label>
+        <input id="site-enabled" type="checkbox" />
+        Enable enhancements for this site
+      </label>
+
+      <label for="mode-selector">Mode</label>
+      <select id="mode-selector">
+        <option value="safe">safe</option>
+        <option value="enhanced">enhanced</option>
+        <option value="experimental">experimental</option>
+      </select>
+
+      <h2>Current page summary</h2>
+      <p id="summary-placeholder">Loading summary...</p>
     </main>
+
+    <script src="popup.js"></script>
   </body>
 </html>
