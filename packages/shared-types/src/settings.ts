@@ -13,6 +13,12 @@ export interface PlanSummary {
   readonly summary: string;
 }
 
+export interface ExecutionMemory {
+  readonly signature: string;
+  readonly planId?: string;
+  readonly recordedAt: string;
+}
+
 export interface GlobalSettings {
   readonly defaultEnabled: boolean;
   readonly defaultMode: EnhancementMode;
@@ -23,4 +29,6 @@ export interface SettingsState {
   readonly global: GlobalSettings;
   readonly sites: Readonly<Record<string, SiteSettings>>;
   readonly lastSummaryByHost: Readonly<Record<string, PlanSummary>>;
+  readonly dismissedEnhancementIdsByHost: Readonly<Record<string, readonly string[]>>;
+  readonly lastExecutionByHost: Readonly<Record<string, ExecutionMemory>>;
 }

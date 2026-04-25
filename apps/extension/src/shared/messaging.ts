@@ -1,4 +1,5 @@
 import type {
+  ExecutionMemory,
   EnhancementMode,
   PlanSummary,
   SettingsState,
@@ -11,6 +12,7 @@ export const PAGE_AURA_MESSAGE_TYPE = {
   CONTENT_BOOTSTRAP: 'CONTENT_BOOTSTRAP',
   SETTINGS_READ: 'SETTINGS_READ',
   SETTINGS_WRITE: 'SETTINGS_WRITE',
+  DEBUG_MODE_WRITE: 'DEBUG_MODE_WRITE',
 } as const;
 
 export type PageAuraMessageType =
@@ -49,6 +51,9 @@ export type SettingsReadResponse = {
   ok: true;
   site: SiteSettings;
   summary: PlanSummary | null;
+  debugMode: boolean;
+  dismissedEnhancementIds: readonly string[];
+  executionMemory: ExecutionMemory | null;
 };
 
 export type SettingsWriteMessage = {
@@ -58,15 +63,37 @@ export type SettingsWriteMessage = {
     hostname: string;
     enabled: boolean;
     mode: EnhancementMode;
+    dismissedEnhancementIds?: readonly string[];
+    executionSignature?: string;
+    planId?: string;
   };
 };
 
 export type SettingsWriteResponse = {
   ok: true;
   site: SiteSettings;
+  shouldSkipReapply: boolean;
+  executionMemory: ExecutionMemory | null;
 };
 
-export type PageAuraMessage = ContentBootstrapMessage | SettingsReadMessage | SettingsWriteMessage;
+export type DebugModeWriteMessage = {
+  source: typeof PAGE_AURA_MESSAGE_SOURCE;
+  type: typeof PAGE_AURA_MESSAGE_TYPE.DEBUG_MODE_WRITE;
+  payload: {
+    debugMode: boolean;
+  };
+};
+
+export type DebugModeWriteResponse = {
+  ok: true;
+  debugMode: boolean;
+};
+
+export type PageAuraMessage =
+  | ContentBootstrapMessage
+  | SettingsReadMessage
+  | SettingsWriteMessage
+  | DebugModeWriteMessage;
 
 export const isPageAuraMessage = (value: unknown): value is PageAuraMessage => {
   if (!value || typeof value !== 'object') {
@@ -90,4 +117,6 @@ export const DEFAULT_SETTINGS_STATE: SettingsState = {
   },
   sites: {},
   lastSummaryByHost: {},
+  dismissedEnhancementIdsByHost: {},
+  lastExecutionByHost: {},
 };
