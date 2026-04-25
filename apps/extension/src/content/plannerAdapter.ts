@@ -7,12 +7,6 @@ import type {
   PlannerInput,
   PlannerResult,
 } from '@pageaura/shared-types';
-import type {
-  InsertToolbarEnhancement,
-  JumpLinksEnhancement,
-  StylePatchEnhancement,
-  ThemePatchEnhancement,
-} from '@pageaura/shared-types';
 import type { PageSnapshot } from '@pageaura/shared-types';
 
 export const DEFAULT_PLANNER_CAPABILITIES: PlannerCapabilities = {
@@ -33,28 +27,129 @@ export const buildPlannerInput = (
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
+const isString = (value: unknown): value is string => typeof value === 'string';
+const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
+
+const isBehaviorType = (value: unknown): value is 'focus' | 'scroll' | 'click' =>
+  value === 'focus' || value === 'scroll' || value === 'click';
+
+const isEnhancementBase = (
+  value: Record<string, unknown>,
+): value is Record<string, unknown> & {
+  id: string;
+  type: string;
+  title: string;
+  rationale?: string;
+  optional?: boolean;
+} => {
+  if (!isString(value.id) || !isString(value.type) || !isString(value.title)) {
+    return false;
+  }
+
+  if (value.rationale !== undefined && !isString(value.rationale)) {
+    return false;
+  }
+
+  if (value.optional !== undefined && !isBoolean(value.optional)) {
+    return false;
+  }
+
+  return true;
+};
+
+const isToolbarItemPlan = (value: unknown): boolean => {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    isString(value.id) &&
+    isString(value.label) &&
+    isString(value.selector) &&
+    isBehaviorType(value.behavior)
+  );
+};
+
+const isJumpLinkPlan = (value: unknown): boolean => {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return isString(value.id) && isString(value.label) && isString(value.selector);
+};
+
+const isNumericTokenSet = (value: unknown): boolean => {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  const tokenKeys = ['contrast', 'fontScale', 'spacing', 'radius'] as const;
+  return tokenKeys.every((key) => value[key] === undefined || typeof value[key] === 'number');
+};
+
+const isThemePatchPlan = (value: unknown): boolean => {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  if (
+    value.preset !== 'light' &&
+    value.preset !== 'dark' &&
+    value.preset !== 'high_contrast' &&
+    value.preset !== 'soft'
+  ) {
+    return false;
+  }
+
+  if (value.tokens !== undefined && !isNumericTokenSet(value.tokens)) {
+    return false;
+  }
+
+  return true;
+};
+
+const isStringRecord = (value: unknown): value is Record<string, string> => {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return Object.values(value).every((entry) => isString(entry));
+};
+
+const isStylePatchRule = (value: unknown): boolean => {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return isString(value.selector) && isStringRecord(value.declarations);
+};
+
+const isStylePatchPlan = (value: unknown): boolean => {
+  if (!isRecord(value) || !Array.isArray(value.rules)) {
+    return false;
+  }
+
+  return value.rules.every(isStylePatchRule);
+};
+
 const isEnhancementItem = (value: unknown): value is EnhancementPlanItem => {
-  if (!isRecord(value) || typeof value.type !== 'string' || typeof value.id !== 'string') {
+  if (!isRecord(value) || !isEnhancementBase(value)) {
     return false;
   }
 
   switch (value.type) {
-    case 'insert_toolbar': {
-      const item = value as InsertToolbarEnhancement;
-      return Array.isArray(item.items);
-    }
-    case 'jump_links': {
-      const item = value as JumpLinksEnhancement;
-      return Array.isArray(item.links);
-    }
-    case 'theme_patch': {
-      const item = value as ThemePatchEnhancement;
-      return isRecord(item.patch);
-    }
-    case 'style_patch': {
-      const item = value as StylePatchEnhancement;
-      return isRecord(item.patch) && Array.isArray(item.patch.rules);
-    }
+    case 'insert_toolbar':
+      return Array.isArray(value.items) && value.items.every(isToolbarItemPlan);
+
+    case 'jump_links':
+      return Array.isArray(value.links) && value.links.every(isJumpLinkPlan);
+
+    case 'theme_patch':
+      return isThemePatchPlan(value.patch);
+
+    case 'style_patch':
+      return isStylePatchPlan(value.patch);
+
     default:
       return false;
   }
@@ -74,10 +169,10 @@ export const parsePlannerResponse = (raw: unknown): EnhancementPlan => {
   const { planId, snapshotId, generatedAt, summary, enhancements } = candidate;
 
   if (
-    typeof planId !== 'string' ||
-    typeof snapshotId !== 'string' ||
-    typeof generatedAt !== 'string' ||
-    typeof summary !== 'string' ||
+    !isString(planId) ||
+    !isString(snapshotId) ||
+    !isString(generatedAt) ||
+    !isString(summary) ||
     !Array.isArray(enhancements)
   ) {
     throw new Error('Planner response is missing required enhancement plan fields.');
