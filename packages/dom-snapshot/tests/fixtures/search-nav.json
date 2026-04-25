@@ -1,0 +1,32 @@
+{
+  "url": "https://example.test/docs?q=buttons",
+  "title": "Docs Home",
+  "bodyText": "PageAura helps users improve difficult pages quickly and safely.",
+  "actionElements": [
+    {
+      "tagName": "A",
+      "attributes": { "href": "/docs" },
+      "textContent": "Docs"
+    },
+    {
+      "tagName": "INPUT",
+      "attributes": { "type": "search", "name": "site-search", "placeholder": "Search docs" },
+      "textContent": ""
+    },
+    {
+      "tagName": "BUTTON",
+      "attributes": { "aria-label": "Search" },
+      "textContent": "Search"
+    }
+  ],
+  "sectionElements": [
+    {
+      "tagName": "H1",
+      "textContent": "Welcome"
+    }
+  ],
+  "navCount": 1,
+  "formCount": 0,
+  "listingCount": 0,
+  "hasArticle": false
+}

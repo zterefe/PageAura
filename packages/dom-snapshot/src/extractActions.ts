@@ -14,13 +14,23 @@ const ACTION_SELECTOR = [
   '[role="menuitem"]',
 ].join(',');
 
+const SEARCH_PATTERN = /(search|find|lookup|query|filter)/i;
+
 const resolveActionKind = (element: Element): PageActionKind => {
   if (element instanceof HTMLAnchorElement) {
     return 'navigate';
   }
 
   if (element instanceof HTMLInputElement) {
-    return element.type === 'submit' ? 'submit' : 'input';
+    if (element.type === 'submit') {
+      return 'submit';
+    }
+
+    if (element.type === 'checkbox' || element.type === 'radio') {
+      return 'toggle';
+    }
+
+    return 'input';
   }
 
   if (element instanceof HTMLSelectElement || element instanceof HTMLTextAreaElement) {
@@ -44,7 +54,6 @@ const firstNonEmpty = (...values: Array<string | null | undefined>): string | nu
   return null;
 };
 
-
 const resolveActionLabel = (element: Element): string => {
   const elementLabel = firstNonEmpty(
     element.getAttribute('aria-label'),
@@ -52,7 +61,8 @@ const resolveActionLabel = (element: Element): string => {
     element.getAttribute('placeholder'),
     element.textContent,
     element.getAttribute('name'),
-    element.tagName.toLowerCase());
+    element.tagName.toLowerCase(),
+  );
 
   return (elementLabel ?? '').replace(/\s+/g, ' ').slice(0, MAX_LABEL_LENGTH);
 };
@@ -62,9 +72,45 @@ const isDisabled = (element: Element): boolean => {
     .disabled;
 };
 
+const hasSearchHeuristic = (element: Element, label: string): boolean => {
+  if (element instanceof HTMLInputElement && element.type === 'search') {
+    return true;
+  }
+
+  const attributeSignals = [element.getAttribute('name'), element.getAttribute('id')]
+    .filter(Boolean)
+    .join(' ');
+
+  return SEARCH_PATTERN.test(label) || SEARCH_PATTERN.test(attributeSignals);
+};
+
+const navigationDepth = (element: Element): number => {
+  let depth = 0;
+  let cursor: Element | null = element;
+
+  while (cursor) {
+    if (cursor.matches('nav, [role="navigation"], header')) {
+      depth += 1;
+    }
+    cursor = cursor.parentElement;
+  }
+
+  return depth;
+};
+
+const buildDedupKey = (
+  action: Pick<ActionNode, 'kind' | 'label' | 'selector' | 'href'>,
+): string => {
+  const normalizedLabel = action.label.toLowerCase().replace(/\s+/g, ' ').trim();
+  const normalizedHref = action.href ? new URL(action.href, window.location.href).pathname : '';
+  const normalizedSelector = action.selector.replace(/:nth-of-type\(\d+\)/g, ':nth-of-type(?)');
+  return `${action.kind}|${normalizedLabel}|${normalizedSelector}|${normalizedHref}`;
+};
+
 export const extractActions = (): ActionNode[] => {
   const actionElements = Array.from(document.querySelectorAll(ACTION_SELECTOR));
   const actions: ActionNode[] = [];
+  const seenActions = new Set<string>();
 
   for (const element of actionElements) {
     if (!isElementVisible(element)) {
@@ -76,9 +122,18 @@ export const extractActions = (): ActionNode[] => {
       continue;
     }
 
+    let kind = resolveActionKind(element);
+    if (hasSearchHeuristic(element, label) && kind === 'click') {
+      kind = 'input';
+    }
+
+    if (navigationDepth(element) > 0 && kind === 'click') {
+      kind = 'navigate';
+    }
+
     const action: ActionNode = {
       id: `action-${actions.length + 1}`,
-      kind: resolveActionKind(element),
+      kind,
       label,
       selector: createStableSelector(element),
       role: element.getAttribute('role') ?? undefined,
@@ -86,7 +141,16 @@ export const extractActions = (): ActionNode[] => {
       disabled: isDisabled(element) || undefined,
     };
 
-    actions.push(action);
+    const dedupKey = buildDedupKey(action);
+    if (seenActions.has(dedupKey)) {
+      continue;
+    }
+
+    seenActions.add(dedupKey);
+    actions.push({
+      ...action,
+      id: `action-${actions.length + 1}`,
+    });
 
     if (actions.length >= MAX_ACTION_NODES) {
       break;
