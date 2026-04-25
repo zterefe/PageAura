@@ -5,11 +5,16 @@ import {
   isPageAuraMessage,
   PAGE_AURA_MESSAGE_TYPE,
   type ContentBootstrapResponse,
+  type PageAuraMessage,
+  type SettingsReadResponse,
+  type SettingsWriteResponse,
 } from '../shared/messaging';
 import {
   isEnhancementEnabledForHostname,
+  normalizeHostname,
   readSettingsState,
   resolveEnhancementModeForHostname,
+  writeSiteSettings,
 } from './settingsStorage';
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -23,39 +28,65 @@ chrome.runtime.onInstalled.addListener(() => {
   console.info(`[PageAura] scaffold ready with: ${packageSummary}`);
 });
 
+const handleMessage = async (
+  message: PageAuraMessage,
+): Promise<ContentBootstrapResponse | SettingsReadResponse | SettingsWriteResponse | null> => {
+  if (message.type === PAGE_AURA_MESSAGE_TYPE.CONTENT_BOOTSTRAP) {
+    const enhancementEnabled = await isEnhancementEnabledForHostname(message.payload.hostname);
+    const mode = await resolveEnhancementModeForHostname(message.payload.hostname);
+    const eligible = message.payload.eligible && enhancementEnabled;
+
+    return {
+      ok: true,
+      receivedAt: new Date().toISOString(),
+      hostname: message.payload.hostname,
+      eligible,
+      enhancementEnabled,
+      mode,
+    };
+  }
+
+  if (message.type === PAGE_AURA_MESSAGE_TYPE.SETTINGS_READ) {
+    const hostname = normalizeHostname(message.payload.hostname);
+    const state = await readSettingsState();
+
+    const site = state.sites[hostname] ?? {
+      hostname,
+      enabled: state.global.defaultEnabled,
+      mode: state.global.defaultMode,
+    };
+
+    return {
+      ok: true,
+      site,
+      summary: state.lastSummaryByHost[hostname] ?? null,
+    };
+  }
+
+  if (message.type === PAGE_AURA_MESSAGE_TYPE.SETTINGS_WRITE) {
+    const site = await writeSiteSettings({
+      hostname: message.payload.hostname,
+      enabled: message.payload.enabled,
+      mode: message.payload.mode,
+    });
+
+    return {
+      ok: true,
+      site,
+    };
+  }
+
+  return null;
+};
+
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (!isPageAuraMessage(message)) {
     return false;
   }
 
-  if (message.type === PAGE_AURA_MESSAGE_TYPE.CONTENT_BOOTSTRAP) {
-    void (async () => {
-      const enhancementEnabled = await isEnhancementEnabledForHostname(message.payload.hostname);
-      const mode = await resolveEnhancementModeForHostname(message.payload.hostname);
-      const eligible = message.payload.eligible && enhancementEnabled;
+  void handleMessage(message).then((response) => {
+    sendResponse(response);
+  });
 
-      console.info('[PageAura] bootstrap message received', {
-        hostname: message.payload.hostname,
-        eligible,
-        reason: message.payload.reason,
-        enhancementEnabled,
-        mode,
-      });
-
-      const response: ContentBootstrapResponse = {
-        ok: true,
-        receivedAt: new Date().toISOString(),
-        hostname: message.payload.hostname,
-        eligible,
-        enhancementEnabled,
-        mode,
-      };
-
-      sendResponse(response);
-    })();
-
-    return true;
-  }
-
-  return false;
+  return true;
 });

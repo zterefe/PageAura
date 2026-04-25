@@ -1,7 +1,16 @@
+import type {
+  EnhancementMode,
+  PlanSummary,
+  SettingsState,
+  SiteSettings,
+} from '@pageaura/shared-types';
+
 export const PAGE_AURA_MESSAGE_SOURCE = 'pageaura';
 
 export const PAGE_AURA_MESSAGE_TYPE = {
   CONTENT_BOOTSTRAP: 'CONTENT_BOOTSTRAP',
+  SETTINGS_READ: 'SETTINGS_READ',
+  SETTINGS_WRITE: 'SETTINGS_WRITE',
 } as const;
 
 export type PageAuraMessageType =
@@ -28,7 +37,36 @@ export type ContentBootstrapResponse = {
   mode: 'safe' | 'enhanced' | 'experimental';
 };
 
-export type PageAuraMessage = ContentBootstrapMessage;
+export type SettingsReadMessage = {
+  source: typeof PAGE_AURA_MESSAGE_SOURCE;
+  type: typeof PAGE_AURA_MESSAGE_TYPE.SETTINGS_READ;
+  payload: {
+    hostname: string;
+  };
+};
+
+export type SettingsReadResponse = {
+  ok: true;
+  site: SiteSettings;
+  summary: PlanSummary | null;
+};
+
+export type SettingsWriteMessage = {
+  source: typeof PAGE_AURA_MESSAGE_SOURCE;
+  type: typeof PAGE_AURA_MESSAGE_TYPE.SETTINGS_WRITE;
+  payload: {
+    hostname: string;
+    enabled: boolean;
+    mode: EnhancementMode;
+  };
+};
+
+export type SettingsWriteResponse = {
+  ok: true;
+  site: SiteSettings;
+};
+
+export type PageAuraMessage = ContentBootstrapMessage | SettingsReadMessage | SettingsWriteMessage;
 
 export const isPageAuraMessage = (value: unknown): value is PageAuraMessage => {
   if (!value || typeof value !== 'object') {
@@ -38,6 +76,18 @@ export const isPageAuraMessage = (value: unknown): value is PageAuraMessage => {
   const candidate = value as Partial<PageAuraMessage>;
   return (
     candidate.source === PAGE_AURA_MESSAGE_SOURCE &&
-    candidate.type === PAGE_AURA_MESSAGE_TYPE.CONTENT_BOOTSTRAP
+    Object.values(PAGE_AURA_MESSAGE_TYPE).includes(candidate.type as PageAuraMessageType)
   );
+};
+
+export const DEFAULT_MODE: EnhancementMode = 'safe';
+
+export const DEFAULT_SETTINGS_STATE: SettingsState = {
+  global: {
+    defaultEnabled: true,
+    defaultMode: DEFAULT_MODE,
+    debugMode: false,
+  },
+  sites: {},
+  lastSummaryByHost: {},
 };

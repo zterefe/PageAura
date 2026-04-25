@@ -20,7 +20,7 @@ const createDefaultSettingsState = (): SettingsState => ({
   lastSummaryByHost: {},
 });
 
-const normalizeHostname = (hostname: string): string => hostname.trim().toLowerCase();
+export const normalizeHostname = (hostname: string): string => hostname.trim().toLowerCase();
 
 const mergeSettingsState = (candidate?: Partial<SettingsState>): SettingsState => ({
   global: {
