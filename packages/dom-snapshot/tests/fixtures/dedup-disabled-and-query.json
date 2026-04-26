@@ -1,0 +1,37 @@
+{
+  "url": "https://example.test/search",
+  "title": "Search",
+  "bodyText": "search variants",
+  "actionElements": [
+    {
+      "tagName": "BUTTON",
+      "attributes": { "data-testid": "save-action", "disabled": true },
+      "textContent": "Save"
+    },
+    {
+      "tagName": "BUTTON",
+      "attributes": { "data-testid": "save-action" },
+      "textContent": "Save"
+    },
+    {
+      "tagName": "A",
+      "attributes": { "href": "/search?q=alpha", "data-testid": "result-link" },
+      "textContent": "Open results"
+    },
+    {
+      "tagName": "A",
+      "attributes": { "href": "/search?q=beta", "data-testid": "result-link" },
+      "textContent": "Open results"
+    }
+  ],
+  "sectionElements": [
+    {
+      "tagName": "H1",
+      "textContent": "Search"
+    }
+  ],
+  "navCount": 0,
+  "formCount": 0,
+  "listingCount": 2,
+  "hasArticle": false
+}

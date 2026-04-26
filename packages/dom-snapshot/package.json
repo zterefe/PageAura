@@ -8,7 +8,8 @@
   "scripts": {
     "build": "rimraf dist tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "prettier --check \"src/**/*.ts\""
+    "lint": "prettier --check \"src/**/*.ts\"",
+    "test:fixtures": "npm run build -w @pageaura/shared-types -w @pageaura/dom-snapshot && node --test tests/snapshot.fixtures.test.mjs"
   },
   "dependencies": {
     "@pageaura/shared-types": "0.1.0"
