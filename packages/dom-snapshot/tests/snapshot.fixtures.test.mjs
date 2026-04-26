@@ -24,7 +24,7 @@ class FakeElement {
     };
     this.hidden = false;
     this.type = attributes.type;
-    this.disabled = false;
+    this.disabled = Boolean(attributes.disabled);
     this.id = attributes.id ?? '';
     this.name = attributes.name ?? '';
     this.href = attributes.href ? `https://example.test${attributes.href}` : undefined;
@@ -179,6 +179,24 @@ test('deduplicates semantically similar actions', async () => {
   assert.equal(buyActions.length, 1);
   assert.equal(detailsActions.length, 1);
   assert(snapshot.actions.some((action) => action.selector.includes('data-testid="buy-button"')));
+});
+
+test('prefers enabled duplicates and preserves distinct query-link targets', async () => {
+  const { createPageSnapshot } = await loadBuiltModule();
+  applyFixtureDom(loadFixture('dedup-disabled-and-query.json'));
+
+  const snapshot = createPageSnapshot();
+
+  const saveActions = snapshot.actions.filter((action) => action.label === 'Save');
+  assert.equal(saveActions.length, 1);
+  assert.equal(saveActions[0].disabled, undefined);
+
+  const resultLinks = snapshot.actions.filter(
+    (action) => action.label === 'Open results' && action.kind === 'navigate',
+  );
+  assert.equal(resultLinks.length, 2);
+  assert(resultLinks.some((action) => action.href?.includes('?q=alpha')));
+  assert(resultLinks.some((action) => action.href?.includes('?q=beta')));
 });
 
 test('logs snapshot output when debug mode is enabled', async () => {

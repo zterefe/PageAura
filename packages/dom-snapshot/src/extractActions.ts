@@ -102,7 +102,12 @@ const buildDedupKey = (
   action: Pick<ActionNode, 'kind' | 'label' | 'selector' | 'href'>,
 ): string => {
   const normalizedLabel = action.label.toLowerCase().replace(/\s+/g, ' ').trim();
-  const normalizedHref = action.href ? new URL(action.href, window.location.href).pathname : '';
+  const normalizedHref = action.href
+    ? (() => {
+        const url = new URL(action.href, window.location.href);
+        return `${url.pathname}${url.search}`;
+      })()
+    : '';
   const normalizedSelector = action.selector.replace(/:nth-of-type\(\d+\)/g, ':nth-of-type(?)');
   return `${action.kind}|${normalizedLabel}|${normalizedSelector}|${normalizedHref}`;
 };
@@ -110,7 +115,7 @@ const buildDedupKey = (
 export const extractActions = (): ActionNode[] => {
   const actionElements = Array.from(document.querySelectorAll(ACTION_SELECTOR));
   const actions: ActionNode[] = [];
-  const seenActions = new Set<string>();
+  const seenActions = new Map<string, number>();
 
   for (const element of actionElements) {
     if (!isElementVisible(element)) {
@@ -142,15 +147,28 @@ export const extractActions = (): ActionNode[] => {
     };
 
     const dedupKey = buildDedupKey(action);
-    if (seenActions.has(dedupKey)) {
+    const existingIndex = seenActions.get(dedupKey);
+
+    if (existingIndex !== undefined) {
+      const existing = actions[existingIndex];
+      const existingDisabled = existing.disabled === true;
+      const incomingDisabled = action.disabled === true;
+
+      if (existingDisabled && !incomingDisabled) {
+        actions[existingIndex] = {
+          ...action,
+          id: existing.id,
+        };
+      }
+
       continue;
     }
 
-    seenActions.add(dedupKey);
     actions.push({
       ...action,
       id: `action-${actions.length + 1}`,
     });
+    seenActions.set(dedupKey, actions.length - 1);
 
     if (actions.length >= MAX_ACTION_NODES) {
       break;
