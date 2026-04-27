@@ -12,6 +12,9 @@ const siteStatePill = document.getElementById('site-state-pill') as HTMLSpanElem
 const plannerStatusText = document.getElementById('planner-status') as HTMLParagraphElement;
 const rerunButton = document.getElementById('rerun-enhancements') as HTMLButtonElement;
 const removeButton = document.getElementById('remove-enhancements') as HTMLButtonElement;
+const debugModeText = document.getElementById('debug-mode-state') as HTMLSpanElement;
+const dismissedCountText = document.getElementById('dismissed-count') as HTMLSpanElement;
+const executionSignatureText = document.getElementById('execution-signature') as HTMLElement;
 
 let currentHostname = 'unknown-host';
 let currentMode: EnhancementMode = 'safe';
@@ -76,6 +79,12 @@ const refresh = async (): Promise<void> => {
   currentMode = response.site.mode ?? 'safe';
   currentEnabled = response.site.enabled;
   lastSummary = response.summary;
+  summaryText.textContent = response.summary
+    ? response.summary.summary
+    : 'Enhancement summary is not available yet for this page.';
+  debugModeText.textContent = response.debugMode ? 'enabled' : 'disabled';
+  dismissedCountText.textContent = String(response.dismissedEnhancementIds.length);
+  executionSignatureText.textContent = response.executionMemory?.signature ?? 'none';
   render();
 };
 

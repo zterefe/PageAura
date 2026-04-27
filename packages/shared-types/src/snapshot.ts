@@ -7,11 +7,21 @@ export type PageActionKind =
   | 'menu'
   | 'other';
 
+export type PageTypeHint =
+  | 'search'
+  | 'navigation'
+  | 'content'
+  | 'listing'
+  | 'form'
+  | 'article'
+  | 'landing';
+
 export interface PageMetadata {
   readonly url: string;
   readonly hostname: string;
   readonly title: string;
   readonly capturedAt: string;
+  readonly pageTypeHints: readonly PageTypeHint[];
 }
 
 export interface ActionNode {

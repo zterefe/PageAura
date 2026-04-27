@@ -20,3 +20,7 @@ export {
   runtimeExecutionPlanSchema,
   settingsStateSchema,
 } from '@pageaura/shared-types';
+
+export type { ValidatePlanSchemaResult, ValidationIssue, ValidationSeverity } from './validatePlanSchema';
+export { validatePlanSchema } from './validatePlanSchema';
+export { TOKEN_BOUNDS, clampNumericTokens } from './validateTokens';

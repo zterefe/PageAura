@@ -1,0 +1,42 @@
+{
+  "url": "https://example.test/catalog",
+  "title": "Catalog",
+  "bodyText": "Catalog items buy now view details filter",
+  "actionElements": [
+    {
+      "tagName": "BUTTON",
+      "attributes": { "data-testid": "buy-button" },
+      "textContent": "Buy now"
+    },
+    {
+      "tagName": "BUTTON",
+      "attributes": { "data-testid": "buy-button" },
+      "textContent": "Buy now"
+    },
+    {
+      "tagName": "A",
+      "attributes": { "href": "/products/1" },
+      "textContent": "View details"
+    },
+    {
+      "tagName": "A",
+      "attributes": { "href": "/products/1" },
+      "textContent": "View details"
+    },
+    {
+      "tagName": "DIV",
+      "attributes": { "role": "button", "aria-label": "Filter" },
+      "textContent": "Filter"
+    }
+  ],
+  "sectionElements": [
+    {
+      "tagName": "H1",
+      "textContent": "Catalog"
+    }
+  ],
+  "navCount": 0,
+  "formCount": 0,
+  "listingCount": 8,
+  "hasArticle": false
+}
