@@ -1,5 +1,7 @@
 export type EnhancementMode = 'safe' | 'enhanced' | 'experimental';
 
+export type PlannerSelection = 'community' | 'mock';
+
 export interface SiteSettings {
   readonly hostname: string;
   readonly enabled: boolean;
@@ -23,6 +25,7 @@ export interface GlobalSettings {
   readonly defaultEnabled: boolean;
   readonly defaultMode: EnhancementMode;
   readonly debugMode: boolean;
+  readonly plannerSelection: PlannerSelection;
 }
 
 export interface SettingsState {

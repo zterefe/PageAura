@@ -1,9 +1,12 @@
-import type { EnhancementMode } from '@pageaura/shared-types';
+import type { EnhancementMode, GlobalSettings, SettingsState } from '@pageaura/shared-types';
 import {
   PAGE_AURA_MESSAGE_SOURCE,
   PAGE_AURA_MESSAGE_TYPE,
   type DebugModeWriteResponse,
+  type GlobalSettingsWriteResponse,
   type SettingsReadResponse,
+  type SettingsResetDefaultsResponse,
+  type SettingsStateReadResponse,
   type SettingsWriteResponse,
 } from './messaging';
 
@@ -35,6 +38,16 @@ export const readSiteSettings = async (hostname: string): Promise<SettingsReadRe
   return response;
 };
 
+export const readSettingsState = async (): Promise<SettingsStateReadResponse> => {
+  const response = (await chrome.runtime.sendMessage({
+    source: PAGE_AURA_MESSAGE_SOURCE,
+    type: PAGE_AURA_MESSAGE_TYPE.SETTINGS_STATE_READ,
+    payload: {},
+  })) as SettingsStateReadResponse;
+
+  return response;
+};
+
 export const writeSiteSettings = async (
   hostname: string,
   enabled: boolean,
@@ -57,6 +70,28 @@ export const writeSiteSettings = async (
       planId: options?.planId,
     },
   })) as SettingsWriteResponse;
+
+  return response;
+};
+
+export const writeGlobalSettings = async (
+  global: Partial<GlobalSettings>,
+): Promise<GlobalSettingsWriteResponse> => {
+  const response = (await chrome.runtime.sendMessage({
+    source: PAGE_AURA_MESSAGE_SOURCE,
+    type: PAGE_AURA_MESSAGE_TYPE.GLOBAL_SETTINGS_WRITE,
+    payload: global,
+  })) as GlobalSettingsWriteResponse;
+
+  return response;
+};
+
+export const resetSettingsToDefaults = async (): Promise<SettingsResetDefaultsResponse> => {
+  const response = (await chrome.runtime.sendMessage({
+    source: PAGE_AURA_MESSAGE_SOURCE,
+    type: PAGE_AURA_MESSAGE_TYPE.SETTINGS_RESET_DEFAULTS,
+    payload: {},
+  })) as SettingsResetDefaultsResponse;
 
   return response;
 };

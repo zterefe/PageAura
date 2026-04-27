@@ -6,9 +6,12 @@ import {
   PAGE_AURA_MESSAGE_TYPE,
   type ContentBootstrapResponse,
   type DebugModeWriteResponse,
+  type GlobalSettingsWriteResponse,
   type PageAuraMessage,
   type PlanSummaryWriteResponse,
   type SettingsReadResponse,
+  type SettingsResetDefaultsResponse,
+  type SettingsStateReadResponse,
   type SettingsWriteResponse,
 } from '../shared/messaging';
 import {
@@ -17,8 +20,10 @@ import {
   normalizeHostname,
   readLastExecutionMemory,
   readSettingsState,
+  resetSettingsToDefaults,
   resolveEnhancementModeForHostname,
   writeDebugMode,
+  writeGlobalSettings,
   writeDismissedEnhancementIds,
   writeExecutionMemory,
   writeLastPlanSummary,
@@ -39,17 +44,15 @@ chrome.runtime.onInstalled.addListener(() => {
 const handleMessage = async (
   message: PageAuraMessage,
 ): Promise<
-  | 
   | ContentBootstrapResponse
- 
   | SettingsReadResponse
- 
   | SettingsWriteResponse
+  | SettingsStateReadResponse
+  | GlobalSettingsWriteResponse
+  | SettingsResetDefaultsResponse
   | DebugModeWriteResponse
- 
   | PlanSummaryWriteResponse
   | null
-
 > => {
   if (message.type === PAGE_AURA_MESSAGE_TYPE.CONTENT_BOOTSTRAP) {
     const enhancementEnabled = await isEnhancementEnabledForHostname(message.payload.hostname);
@@ -123,6 +126,33 @@ const handleMessage = async (
     };
   }
 
+  if (message.type === PAGE_AURA_MESSAGE_TYPE.SETTINGS_STATE_READ) {
+    const state = await readSettingsState();
+
+    return {
+      ok: true,
+      state,
+    };
+  }
+
+  if (message.type === PAGE_AURA_MESSAGE_TYPE.GLOBAL_SETTINGS_WRITE) {
+    const global = await writeGlobalSettings(message.payload);
+
+    return {
+      ok: true,
+      global,
+    };
+  }
+
+  if (message.type === PAGE_AURA_MESSAGE_TYPE.SETTINGS_RESET_DEFAULTS) {
+    const state = await resetSettingsToDefaults();
+
+    return {
+      ok: true,
+      state,
+    };
+  }
+
   if (message.type === PAGE_AURA_MESSAGE_TYPE.DEBUG_MODE_WRITE) {
     const debugMode = await writeDebugMode(message.payload.debugMode);
 
@@ -140,16 +170,6 @@ const handleMessage = async (
       summary,
     };
   }
-
-  if (message.type === PAGE_AURA_MESSAGE_TYPE.PLAN_SUMMARY_WRITE) {
-    const summary = await writeLastPlanSummary(message.payload.hostname, message.payload.summary);
-
-    return {
-      ok: true,
-      summary,
-    };
-  }
-
   return null;
 };
 
