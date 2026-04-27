@@ -1,11 +1,16 @@
 import type { EnhancementMode } from '@pageaura/shared-types';
-import { readSiteSettings, writeSiteSettings } from '../shared/uiSettingsClient';
+import { readSiteSettings, writeDebugMode, writeSiteSettings } from '../shared/uiSettingsClient';
 
 const hostnameInput = document.getElementById('hostname-input') as HTMLInputElement;
 const modeSelect = document.getElementById('options-mode-selector') as HTMLSelectElement;
 const enabledToggle = document.getElementById('options-site-enabled') as HTMLInputElement;
 const statusText = document.getElementById('save-status') as HTMLParagraphElement;
 const saveButton = document.getElementById('save-button') as HTMLButtonElement;
+const debugModeToggle = document.getElementById('debug-mode-toggle') as HTMLInputElement;
+const dismissedCountText = document.getElementById('options-dismissed-count') as HTMLSpanElement;
+const executionSignatureText = document.getElementById(
+  'options-execution-signature',
+) as HTMLElement;
 
 const isValidSiteHostname = (hostname: string): boolean => {
   if (!hostname || hostname === 'unknown-host') {
@@ -24,6 +29,9 @@ const loadHostSettings = async (hostname: string): Promise<void> => {
   const response = await readSiteSettings(hostname);
   enabledToggle.checked = response.site.enabled;
   modeSelect.value = response.site.mode ?? 'safe';
+  debugModeToggle.checked = response.debugMode;
+  dismissedCountText.textContent = String(response.dismissedEnhancementIds.length);
+  executionSignatureText.textContent = response.executionMemory?.signature ?? 'none';
   statusText.textContent = 'Loaded settings.';
 };
 
@@ -39,6 +47,12 @@ saveButton.addEventListener('click', () => {
 
   void writeSiteSettings(hostname, enabled, mode).then(() => {
     statusText.textContent = 'Saved settings.';
+  });
+});
+
+debugModeToggle.addEventListener('change', () => {
+  void writeDebugMode(debugModeToggle.checked).then((response) => {
+    statusText.textContent = response.debugMode ? 'Debug mode enabled.' : 'Debug mode disabled.';
   });
 });
 

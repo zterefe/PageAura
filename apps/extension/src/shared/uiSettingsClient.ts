@@ -2,6 +2,7 @@ import type { EnhancementMode } from '@pageaura/shared-types';
 import {
   PAGE_AURA_MESSAGE_SOURCE,
   PAGE_AURA_MESSAGE_TYPE,
+  type DebugModeWriteResponse,
   type SettingsReadResponse,
   type SettingsWriteResponse,
 } from './messaging';
@@ -38,12 +39,34 @@ export const writeSiteSettings = async (
   hostname: string,
   enabled: boolean,
   mode: EnhancementMode,
+  options?: {
+    dismissedEnhancementIds?: readonly string[];
+    executionSignature?: string;
+    planId?: string;
+  },
 ): Promise<SettingsWriteResponse> => {
   const response = (await chrome.runtime.sendMessage({
     source: PAGE_AURA_MESSAGE_SOURCE,
     type: PAGE_AURA_MESSAGE_TYPE.SETTINGS_WRITE,
-    payload: { hostname, enabled, mode },
+    payload: {
+      hostname,
+      enabled,
+      mode,
+      dismissedEnhancementIds: options?.dismissedEnhancementIds,
+      executionSignature: options?.executionSignature,
+      planId: options?.planId,
+    },
   })) as SettingsWriteResponse;
+
+  return response;
+};
+
+export const writeDebugMode = async (debugMode: boolean): Promise<DebugModeWriteResponse> => {
+  const response = (await chrome.runtime.sendMessage({
+    source: PAGE_AURA_MESSAGE_SOURCE,
+    type: PAGE_AURA_MESSAGE_TYPE.DEBUG_MODE_WRITE,
+    payload: { debugMode },
+  })) as DebugModeWriteResponse;
 
   return response;
 };

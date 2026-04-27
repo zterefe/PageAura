@@ -48,8 +48,16 @@ export const settingsStateSchema: JsonSchema = {
     global: { type: 'object' },
     sites: { type: 'object' },
     lastSummaryByHost: { type: 'object' },
+    dismissedEnhancementIdsByHost: { type: 'object' },
+    lastExecutionByHost: { type: 'object' },
   },
-  required: ['global', 'sites', 'lastSummaryByHost'],
+  required: [
+    'global',
+    'sites',
+    'lastSummaryByHost',
+    'dismissedEnhancementIdsByHost',
+    'lastExecutionByHost',
+  ],
   additionalProperties: false,
 } as const;
 
