@@ -11,6 +11,7 @@ export const PAGE_AURA_MESSAGE_TYPE = {
   CONTENT_BOOTSTRAP: 'CONTENT_BOOTSTRAP',
   SETTINGS_READ: 'SETTINGS_READ',
   SETTINGS_WRITE: 'SETTINGS_WRITE',
+  PLAN_SUMMARY_WRITE: 'PLAN_SUMMARY_WRITE',
 } as const;
 
 export type PageAuraMessageType =
@@ -66,7 +67,25 @@ export type SettingsWriteResponse = {
   site: SiteSettings;
 };
 
-export type PageAuraMessage = ContentBootstrapMessage | SettingsReadMessage | SettingsWriteMessage;
+export type PlanSummaryWriteMessage = {
+  source: typeof PAGE_AURA_MESSAGE_SOURCE;
+  type: typeof PAGE_AURA_MESSAGE_TYPE.PLAN_SUMMARY_WRITE;
+  payload: {
+    hostname: string;
+    summary: PlanSummary;
+  };
+};
+
+export type PlanSummaryWriteResponse = {
+  ok: true;
+  summary: PlanSummary;
+};
+
+export type PageAuraMessage =
+  | ContentBootstrapMessage
+  | SettingsReadMessage
+  | SettingsWriteMessage
+  | PlanSummaryWriteMessage;
 
 export const isPageAuraMessage = (value: unknown): value is PageAuraMessage => {
   if (!value || typeof value !== 'object') {
