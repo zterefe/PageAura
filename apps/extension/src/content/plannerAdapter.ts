@@ -208,8 +208,15 @@ export const runPlanner = async (
   snapshot: PageSnapshot,
   capabilities: PlannerCapabilities = DEFAULT_PLANNER_CAPABILITIES,
 ): Promise<PlannerResult> => {
+  return runPlannerWithInput(planner, buildPlannerInput(snapshot, capabilities));
+};
+
+export const runPlannerWithInput = async (
+  planner: Planner,
+  input: PlannerInput,
+): Promise<PlannerResult> => {
   try {
-    const raw = await planner.plan(buildPlannerInput(snapshot, capabilities));
+    const raw = await planner.plan(input);
 
     try {
       return {

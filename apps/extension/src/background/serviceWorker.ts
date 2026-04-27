@@ -6,6 +6,7 @@ import {
   PAGE_AURA_MESSAGE_TYPE,
   type ContentBootstrapResponse,
   type PageAuraMessage,
+  type PlanSummaryWriteResponse,
   type SettingsReadResponse,
   type SettingsWriteResponse,
 } from '../shared/messaging';
@@ -14,6 +15,7 @@ import {
   normalizeHostname,
   readSettingsState,
   resolveEnhancementModeForHostname,
+  writeLastPlanSummary,
   writeSiteSettings,
 } from './settingsStorage';
 
@@ -30,7 +32,13 @@ chrome.runtime.onInstalled.addListener(() => {
 
 const handleMessage = async (
   message: PageAuraMessage,
-): Promise<ContentBootstrapResponse | SettingsReadResponse | SettingsWriteResponse | null> => {
+): Promise<
+  | ContentBootstrapResponse
+  | SettingsReadResponse
+  | SettingsWriteResponse
+  | PlanSummaryWriteResponse
+  | null
+> => {
   if (message.type === PAGE_AURA_MESSAGE_TYPE.CONTENT_BOOTSTRAP) {
     const enhancementEnabled = await isEnhancementEnabledForHostname(message.payload.hostname);
     const mode = await resolveEnhancementModeForHostname(message.payload.hostname);
@@ -73,6 +81,15 @@ const handleMessage = async (
     return {
       ok: true,
       site,
+    };
+  }
+
+  if (message.type === PAGE_AURA_MESSAGE_TYPE.PLAN_SUMMARY_WRITE) {
+    const summary = await writeLastPlanSummary(message.payload.hostname, message.payload.summary);
+
+    return {
+      ok: true,
+      summary,
     };
   }
 
