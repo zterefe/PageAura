@@ -4,31 +4,149 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PageAura</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: Inter, system-ui, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        background: #0f1115;
+        color: #e9edf2;
+      }
+
+      main {
+        display: grid;
+        gap: 12px;
+        padding: 14px;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      .card {
+        border: 1px solid #2a313d;
+        border-radius: 10px;
+        padding: 10px;
+        background: #161b23;
+      }
+
+      .status-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .pill {
+        border-radius: 999px;
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .pill[data-status='active'] {
+        background: rgba(47, 188, 105, 0.2);
+        color: #71f2a5;
+      }
+
+      .pill[data-status='paused'] {
+        background: rgba(249, 173, 83, 0.22);
+        color: #ffd5a1;
+      }
+
+      .stack {
+        display: grid;
+        gap: 8px;
+      }
+
+      .control {
+        display: grid;
+        gap: 6px;
+        font-size: 13px;
+      }
+
+      .action-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      button {
+        border: 1px solid #2f5b9d;
+        background: #163868;
+        color: #e9edf2;
+        border-radius: 8px;
+        padding: 8px 10px;
+        cursor: pointer;
+      }
+
+      button.secondary {
+        border-color: #5d4c1e;
+        background: #3e3215;
+      }
+
+      .meta {
+        font-size: 12px;
+        opacity: 0.85;
+      }
+
+      #planner-status {
+        font-size: 13px;
+      }
+    </style>
   </head>
   <body>
     <main>
       <h1>PageAura</h1>
-      <p>Current site: <strong id="hostname">loading...</strong></p>
 
-      <label>
-        <input id="site-enabled" type="checkbox" />
-        Enable enhancements for this site
-      </label>
+      <section class="card stack" aria-label="Current site status">
+        <div class="status-row">
+          <h2 id="hostname">loading…</h2>
+          <span id="site-state-pill" class="pill" data-status="paused">Checking</span>
+        </div>
+        <p class="meta">Current site status</p>
+      </section>
 
-      <label for="mode-selector">Mode</label>
-      <select id="mode-selector">
-        <option value="safe">safe</option>
-        <option value="enhanced">enhanced</option>
-        <option value="experimental">experimental</option>
-      </select>
+      <section class="card stack" aria-label="Controls">
+        <label class="control">
+          <span>Enable enhancements for this site</span>
+          <input id="site-enabled" type="checkbox" />
+        </label>
 
-      <h2>Current page summary</h2>
-      <p id="summary-placeholder">Loading summary...</p>
+        <label class="control" for="mode-selector">
+          <span>Enhancement mode</span>
+          <select id="mode-selector">
+            <option value="safe">safe</option>
+            <option value="enhanced">enhanced</option>
+            <option value="experimental">experimental</option>
+          </select>
+        </label>
+      </section>
 
-      <h2>Stored state</h2>
-      <p>Debug mode: <strong id="debug-mode-state">loading...</strong></p>
-      <p>Dismissed enhancements: <span id="dismissed-count">0</span></p>
-      <p>Last execution signature: <code id="execution-signature">none</code></p>
+      <section class="card stack" aria-label="Enhancement summary">
+        <h2>Last enhancement summary</h2>
+        <p id="summary-placeholder">Loading summary...</p>
+
+        <h2>Stored state</h2>
+        <p>Debug mode: <strong id="debug-mode-state">loading...</strong></p>
+        <p>Dismissed enhancements: <span id="dismissed-count">0</span></p>
+        <p>Last execution signature: <code id="execution-signature">none</code></p>
+        <p id="summary-generated-at" class="meta"></p>
+      </section>
+
+      <section class="card stack" aria-label="Actions">
+        <div class="action-row">
+          <button id="rerun-enhancements" type="button">Rerun</button>
+          <button id="remove-enhancements" class="secondary" type="button">Remove</button>
+        </div>
+        <p id="planner-status">Planner status: loading…</p>
+      </section>
     </main>
 
     <script src="popup.js"></script>

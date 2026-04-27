@@ -1,8 +1,9 @@
 declare namespace chrome {
-
   namespace storage {
     namespace local {
-      const get: (keys?: string | string[] | Record<string, unknown> | null) => Promise<Record<string, unknown>>;
+      const get: (
+        keys?: string | string[] | Record<string, unknown> | null,
+      ) => Promise<Record<string, unknown>>;
       const set: (items: Record<string, unknown>) => Promise<void>;
     }
   }
@@ -48,5 +49,6 @@ declare namespace chrome {
     };
 
     function query(queryInfo: { active?: boolean; currentWindow?: boolean }): Promise<Tab[]>;
+    function reload(tabId?: number): Promise<void>;
   }
 }
