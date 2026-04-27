@@ -1,5 +1,7 @@
 const VISIBLE_STYLE_BLOCKERS = new Set(['none', 'hidden']);
 
+const STABLE_DATA_ATTRIBUTES = ['data-testid', 'data-test', 'data-qa', 'data-cy'] as const;
+
 export const toSelectorFragment = (value: string): string => {
   return value
     .trim()
@@ -8,13 +10,58 @@ export const toSelectorFragment = (value: string): string => {
     .replace(/^-+|-+$/g, '');
 };
 
+const hasLikelyStableId = (id: string): boolean => {
+  return !/^(ember|react|vue|svelte|headlessui|radix)-/i.test(id) && !/\d{4,}/.test(id);
+};
+
+const pickStableDataSelector = (element: Element): string | null => {
+  for (const attribute of STABLE_DATA_ATTRIBUTES) {
+    const value = element.getAttribute(attribute)?.trim();
+    if (value) {
+      return `${element.tagName.toLowerCase()}[${attribute}="${CSS.escape(value)}"]`;
+    }
+  }
+
+  return null;
+};
+
+const pickSemanticSelector = (element: Element): string | null => {
+  const role = element.getAttribute('role');
+  if (role) {
+    const ariaLabel = element.getAttribute('aria-label')?.trim();
+    if (ariaLabel) {
+      return `${element.tagName.toLowerCase()}[role="${CSS.escape(role)}"][aria-label="${CSS.escape(ariaLabel)}"]`;
+    }
+
+    return `${element.tagName.toLowerCase()}[role="${CSS.escape(role)}"]`;
+  }
+
+  const namedAttribute = element.getAttribute('name')?.trim();
+  if (namedAttribute) {
+    return `${element.tagName.toLowerCase()}[name="${CSS.escape(namedAttribute)}"]`;
+  }
+
+  return null;
+};
+
 export const createStableSelector = (element: Element): string => {
-  if (element.id) {
+  if (element.id && hasLikelyStableId(element.id)) {
     return `#${CSS.escape(element.id)}`;
+  }
+
+  const stableDataSelector = pickStableDataSelector(element);
+  if (stableDataSelector) {
+    return stableDataSelector;
+  }
+
+  const semanticSelector = pickSemanticSelector(element);
+  if (semanticSelector) {
+    return semanticSelector;
   }
 
   const tagName = element.tagName.toLowerCase();
   const classList = Array.from(element.classList)
+    .filter((className) => !/^css-|^sc-|^jsx-|^_[a-z0-9]/i.test(className))
     .slice(0, 2)
     .map((className) => `.${CSS.escape(className)}`)
     .join('');
@@ -23,24 +70,15 @@ export const createStableSelector = (element: Element): string => {
     return `${tagName}${classList}`;
   }
 
-  const namedAttribute = element.getAttribute('name');
-  if (namedAttribute) {
-    return `${tagName}[name="${CSS.escape(namedAttribute)}"]`;
-  }
-
-  const testIdAttribute = element.getAttribute('data-testid');
-  if (testIdAttribute) {
-    return `${tagName}[data-testid="${CSS.escape(testIdAttribute)}"]`;
-  }
-
   const parent = element.parentElement;
   if (!parent) {
     return tagName;
   }
 
+  const parentSelector = createStableSelector(parent);
   const siblings = Array.from(parent.children).filter((child) => child.tagName === element.tagName);
   const siblingIndex = siblings.indexOf(element) + 1;
-  return `${parent.tagName.toLowerCase()} > ${tagName}:nth-of-type(${siblingIndex})`;
+  return `${parentSelector} > ${tagName}:nth-of-type(${siblingIndex})`;
 };
 
 export const isElementVisible = (element: Element): boolean => {

@@ -33,6 +33,7 @@ export type {
   PageMetadata,
   PageMetrics,
   PageSnapshot,
+  PageTypeHint,
   SectionNode,
 } from '@pageaura/shared-types';
 export { pageSnapshotSchema } from '@pageaura/shared-types';

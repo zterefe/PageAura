@@ -13,6 +13,7 @@ export const PAGE_AURA_MESSAGE_TYPE = {
   SETTINGS_READ: 'SETTINGS_READ',
   SETTINGS_WRITE: 'SETTINGS_WRITE',
   DEBUG_MODE_WRITE: 'DEBUG_MODE_WRITE',
+  PLAN_SUMMARY_WRITE: 'PLAN_SUMMARY_WRITE',
 } as const;
 
 export type PageAuraMessageType =
@@ -93,7 +94,22 @@ export type PageAuraMessage =
   | ContentBootstrapMessage
   | SettingsReadMessage
   | SettingsWriteMessage
-  | DebugModeWriteMessage;
+  | DebugModeWriteMessage
+  | PlanSummaryWriteMessage;
+
+export type PlanSummaryWriteMessage = {
+  source: typeof PAGE_AURA_MESSAGE_SOURCE;
+  type: typeof PAGE_AURA_MESSAGE_TYPE.PLAN_SUMMARY_WRITE;
+  payload: {
+    hostname: string;
+    summary: PlanSummary;
+  };
+};
+
+export type PlanSummaryWriteResponse = {
+  ok: true;
+  summary: PlanSummary;
+};
 
 export const isPageAuraMessage = (value: unknown): value is PageAuraMessage => {
   if (!value || typeof value !== 'object') {

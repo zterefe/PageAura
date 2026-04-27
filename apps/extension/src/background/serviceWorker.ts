@@ -7,6 +7,7 @@ import {
   type ContentBootstrapResponse,
   type DebugModeWriteResponse,
   type PageAuraMessage,
+  type PlanSummaryWriteResponse,
   type SettingsReadResponse,
   type SettingsWriteResponse,
 } from '../shared/messaging';
@@ -20,6 +21,7 @@ import {
   writeDebugMode,
   writeDismissedEnhancementIds,
   writeExecutionMemory,
+  writeLastPlanSummary,
   writeSiteSettings,
 } from './settingsStorage';
 
@@ -37,11 +39,17 @@ chrome.runtime.onInstalled.addListener(() => {
 const handleMessage = async (
   message: PageAuraMessage,
 ): Promise<
+  | 
   | ContentBootstrapResponse
+ 
   | SettingsReadResponse
+ 
   | SettingsWriteResponse
   | DebugModeWriteResponse
+ 
+  | PlanSummaryWriteResponse
   | null
+
 > => {
   if (message.type === PAGE_AURA_MESSAGE_TYPE.CONTENT_BOOTSTRAP) {
     const enhancementEnabled = await isEnhancementEnabledForHostname(message.payload.hostname);
@@ -122,6 +130,24 @@ const handleMessage = async (
       ok: true,
       debugMode,
     } satisfies DebugModeWriteResponse;
+  }
+
+  if (message.type === PAGE_AURA_MESSAGE_TYPE.PLAN_SUMMARY_WRITE) {
+    const summary = await writeLastPlanSummary(message.payload.hostname, message.payload.summary);
+
+    return {
+      ok: true,
+      summary,
+    };
+  }
+
+  if (message.type === PAGE_AURA_MESSAGE_TYPE.PLAN_SUMMARY_WRITE) {
+    const summary = await writeLastPlanSummary(message.payload.hostname, message.payload.summary);
+
+    return {
+      ok: true,
+      summary,
+    };
   }
 
   return null;
