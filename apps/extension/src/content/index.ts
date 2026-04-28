@@ -14,6 +14,8 @@ import {
   runPlannerWithInput,
 } from './plannerAdapter';
 import { mockPlanner } from './mockPlanner';
+import { compileRuntimeExecutionPlan } from './compiler';
+import { executeRuntimePlan } from './runtimeExecutor';
 
 const currentUrl = new URL(window.location.href);
 const eligibility = getPageEligibility(currentUrl);
@@ -108,6 +110,10 @@ const runPlannerPipeline = async (mode: EnhancementMode): Promise<void> => {
     };
 
     await persistPlanSummary(summary);
+
+    const executionPlan = compileRuntimeExecutionPlan(plannerResult.plan);
+    executeRuntimePlan(executionPlan);
+
     console.info('[PageAura] planner completed', {
       hostname: eligibility.hostname,
       summary,
