@@ -7,9 +7,19 @@ export type RuntimeOpType =
   | 'apply_theme_tokens'
   | 'apply_style_patch';
 
+export type CleanupTarget = 'nodes' | 'listeners' | 'styles' | 'attributes' | 'custom';
+export type CleanupTrigger = 'before_rerun' | 'on_dispose';
+
+export interface CleanupRegistrationContract {
+  readonly cleanupId: string;
+  readonly target: CleanupTarget;
+  readonly trigger: CleanupTrigger;
+}
+
 interface RuntimeOpBase {
   readonly opId: string;
   readonly opType: RuntimeOpType;
+  readonly cleanup: readonly CleanupRegistrationContract[];
 }
 
 export interface MountOverlayRootOp extends RuntimeOpBase {
@@ -63,9 +73,35 @@ export type RuntimeOp =
   | ApplyThemeTokensOp
   | ApplyStylePatchOp;
 
+export type RuntimeBatchMode = 'serial' | 'parallel';
+
+export interface RuntimeOpBatch {
+  readonly batchId: string;
+  readonly mode: RuntimeBatchMode;
+  readonly cleanupBeforeApply: boolean;
+  readonly opIds: readonly string[];
+}
+
+export type RuntimeReapplyStrategy = 'replace_existing' | 'append_only';
+
+export interface RuntimeReapplyLifecycle {
+  readonly strategy: RuntimeReapplyStrategy;
+  readonly cleanupBeforeReapply: boolean;
+  readonly supportsSpaNavigation: boolean;
+}
+
 export interface RuntimeExecutionPlan {
   readonly executionId: string;
   readonly sourcePlanId: string;
   readonly generatedAt: string;
   readonly ops: readonly RuntimeOp[];
+  readonly batches: readonly RuntimeOpBatch[];
+  readonly lifecycle: RuntimeReapplyLifecycle;
+}
+
+export interface PlanExecutionHandle {
+  readonly executionId: string;
+  readonly sourcePlanId: string;
+  readonly active: boolean;
+  dispose(): void;
 }
