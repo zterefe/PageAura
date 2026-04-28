@@ -1,6 +1,7 @@
 import type {
   ExecutionMemory,
   EnhancementMode,
+  GlobalSettings,
   PlanSummary,
   SettingsState,
   SiteSettings,
@@ -12,6 +13,9 @@ export const PAGE_AURA_MESSAGE_TYPE = {
   CONTENT_BOOTSTRAP: 'CONTENT_BOOTSTRAP',
   SETTINGS_READ: 'SETTINGS_READ',
   SETTINGS_WRITE: 'SETTINGS_WRITE',
+  SETTINGS_STATE_READ: 'SETTINGS_STATE_READ',
+  GLOBAL_SETTINGS_WRITE: 'GLOBAL_SETTINGS_WRITE',
+  SETTINGS_RESET_DEFAULTS: 'SETTINGS_RESET_DEFAULTS',
   DEBUG_MODE_WRITE: 'DEBUG_MODE_WRITE',
   PLAN_SUMMARY_WRITE: 'PLAN_SUMMARY_WRITE',
 } as const;
@@ -77,6 +81,39 @@ export type SettingsWriteResponse = {
   executionMemory: ExecutionMemory | null;
 };
 
+export type SettingsStateReadMessage = {
+  source: typeof PAGE_AURA_MESSAGE_SOURCE;
+  type: typeof PAGE_AURA_MESSAGE_TYPE.SETTINGS_STATE_READ;
+  payload: Record<string, never>;
+};
+
+export type SettingsStateReadResponse = {
+  ok: true;
+  state: SettingsState;
+};
+
+export type GlobalSettingsWriteMessage = {
+  source: typeof PAGE_AURA_MESSAGE_SOURCE;
+  type: typeof PAGE_AURA_MESSAGE_TYPE.GLOBAL_SETTINGS_WRITE;
+  payload: Partial<GlobalSettings>;
+};
+
+export type GlobalSettingsWriteResponse = {
+  ok: true;
+  global: GlobalSettings;
+};
+
+export type SettingsResetDefaultsMessage = {
+  source: typeof PAGE_AURA_MESSAGE_SOURCE;
+  type: typeof PAGE_AURA_MESSAGE_TYPE.SETTINGS_RESET_DEFAULTS;
+  payload: Record<string, never>;
+};
+
+export type SettingsResetDefaultsResponse = {
+  ok: true;
+  state: SettingsState;
+};
+
 export type DebugModeWriteMessage = {
   source: typeof PAGE_AURA_MESSAGE_SOURCE;
   type: typeof PAGE_AURA_MESSAGE_TYPE.DEBUG_MODE_WRITE;
@@ -94,6 +131,9 @@ export type PageAuraMessage =
   | ContentBootstrapMessage
   | SettingsReadMessage
   | SettingsWriteMessage
+  | SettingsStateReadMessage
+  | GlobalSettingsWriteMessage
+  | SettingsResetDefaultsMessage
   | DebugModeWriteMessage
   | PlanSummaryWriteMessage;
 
@@ -130,6 +170,7 @@ export const DEFAULT_SETTINGS_STATE: SettingsState = {
     defaultEnabled: true,
     defaultMode: DEFAULT_MODE,
     debugMode: false,
+    plannerSelection: 'community',
   },
   sites: {},
   lastSummaryByHost: {},

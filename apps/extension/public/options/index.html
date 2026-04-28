@@ -9,30 +9,71 @@
     <main>
       <h1>PageAura Options</h1>
 
-      <label for="hostname-input">Hostname</label>
-      <input id="hostname-input" type="text" placeholder="example.com" />
+      <section>
+        <h2>Global defaults</h2>
+        <label>
+          <input id="global-default-enabled" type="checkbox" />
+          Enable enhancements by default
+        </label>
 
-      <label>
-        <input id="options-site-enabled" type="checkbox" />
-        Enable enhancements for hostname
-      </label>
+        <label for="global-default-mode">Default mode</label>
+        <select id="global-default-mode">
+          <option value="safe">safe</option>
+          <option value="enhanced">enhanced</option>
+          <option value="experimental">experimental</option>
+        </select>
+      </section>
 
-      <label for="options-mode-selector">Mode</label>
-      <select id="options-mode-selector">
-        <option value="safe">safe</option>
-        <option value="enhanced">enhanced</option>
-        <option value="experimental">experimental</option>
-      </select>
+      <section>
+        <h2>Developer controls</h2>
+        <label>
+          <input id="debug-mode-toggle" type="checkbox" />
+          Enable debug mode
+        </label>
 
-      <button id="save-button" type="button">Save</button>
+        <label for="planner-selection">Planner</label>
+        <select id="planner-selection">
+          <option value="community">community</option>
+          <option value="mock">mock (local dev)</option>
+        </select>
+      </section>
 
-      <label>
-        <input id="debug-mode-toggle" type="checkbox" />
-        Enable debug mode
-      </label>
+      <section>
+        <h2>Site override editor</h2>
+        <label for="hostname-input">Hostname</label>
+        <input id="hostname-input" type="text" placeholder="example.com" />
 
-      <p>Dismissed enhancements: <span id="options-dismissed-count">0</span></p>
-      <p>Last execution signature: <code id="options-execution-signature">none</code></p>
+        <label>
+          <input id="options-site-enabled" type="checkbox" />
+          Enable enhancements for hostname
+        </label>
+
+        <label for="options-mode-selector">Mode override</label>
+        <select id="options-mode-selector">
+          <option value="safe">safe</option>
+          <option value="enhanced">enhanced</option>
+          <option value="experimental">experimental</option>
+        </select>
+
+        <button id="save-button" type="button">Save site override</button>
+      </section>
+
+      <section>
+        <h2>Stored site overrides</h2>
+        <ul id="site-overrides-list"></ul>
+      </section>
+
+      <section>
+        <h2>Diagnostics</h2>
+        <p>Dismissed enhancements: <span id="options-dismissed-count">0</span></p>
+        <p>Last execution signature: <code id="options-execution-signature">none</code></p>
+      </section>
+
+      <section>
+        <button id="save-global-button" type="button">Save global defaults</button>
+        <button id="reset-defaults-button" type="button">Reset to defaults</button>
+      </section>
+
       <p id="save-status">Ready.</p>
     </main>
 

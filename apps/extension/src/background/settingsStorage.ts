@@ -13,6 +13,7 @@ const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
   defaultEnabled: true,
   defaultMode: 'safe',
   debugMode: false,
+  plannerSelection: 'community',
 };
 
 const createDefaultSettingsState = (): SettingsState => ({
@@ -227,4 +228,9 @@ export const readDebugMode = async (): Promise<boolean> => {
 export const writeDebugMode = async (debugMode: boolean): Promise<boolean> => {
   const global = await writeGlobalSettings({ debugMode });
   return global.debugMode;
+};
+
+export const resetSettingsToDefaults = async (): Promise<SettingsState> => {
+  const defaults = createDefaultSettingsState();
+  return writeSettingsState(defaults);
 };
