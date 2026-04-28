@@ -1,0 +1,4 @@
+{
+  "selectors": ["main", "#content", "article h2", ".cta"],
+  "throwSelectors": [":has(.unsupported)"]
+}
