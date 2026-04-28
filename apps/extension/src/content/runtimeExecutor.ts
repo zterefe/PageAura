@@ -1,4 +1,6 @@
 import type {
+  ApplyStylePatchOp,
+  ApplyThemeTokensOp,
   BehaviorType,
   InsertJumpLinksOp,
   InsertToolbarOp,
@@ -6,9 +8,13 @@ import type {
   RuntimeExecutionPlan,
   RuntimeOp,
 } from '@pageaura/shared-types';
+import { resolveRuntimeSelector } from './semanticResolvers';
+import { compileThemeTokensToCss, normalizeAndClampThemeTokens } from './themeTokenCompiler';
 
 const OVERLAY_RUN_DATA_ATTRIBUTE = 'data-pageaura-overlay';
 const OVERLAY_COMPONENT_ATTRIBUTE = 'data-pageaura-component';
+const THEME_CLASSNAME = 'pageaura-theme-patch';
+const THEME_STYLE_ELEMENT_ID = 'pageaura-theme-patch-style';
 
 interface RuntimeState {
   cleanup: () => void;
@@ -27,7 +33,7 @@ const runCleanups = (cleanups: readonly Array<() => void>): void => {
 };
 
 const resolveTarget = (selector: string): HTMLElement | null => {
-  const candidate = document.querySelector(selector);
+  const candidate = document.querySelector(resolveRuntimeSelector(selector));
   return candidate instanceof HTMLElement ? candidate : null;
 };
 
@@ -197,6 +203,76 @@ const executeJumpLinks = (
   overlayRoot.append(nav);
 };
 
+const ensureStyleElement = (id: string): HTMLStyleElement => {
+  const existing = document.getElementById(id);
+  if (existing instanceof HTMLStyleElement) {
+    return existing;
+  }
+
+  const styleTag = document.createElement('style');
+  styleTag.id = id;
+  document.head.append(styleTag);
+  return styleTag;
+};
+
+const executeThemePatch = (op: ApplyThemeTokensOp, cleanups: Array<() => void>): void => {
+  const { tokens, clamped } = normalizeAndClampThemeTokens(op.tokens);
+  if (clamped.length > 0) {
+    console.info('[PageAura] theme tokens clamped', { opId: op.opId, clamped });
+  }
+
+  const styleTag = ensureStyleElement(THEME_STYLE_ELEMENT_ID);
+  styleTag.textContent = compileThemeTokensToCss(op.preset, tokens);
+
+  document.documentElement.classList.add(THEME_CLASSNAME);
+  document.body.classList.add(THEME_CLASSNAME);
+
+  cleanups.push(() => {
+    document.documentElement.classList.remove(THEME_CLASSNAME);
+    document.body.classList.remove(THEME_CLASSNAME);
+    styleTag.remove();
+  });
+};
+
+const compileStyleRulesToCss = (op: ApplyStylePatchOp): string => {
+  return op.rules
+    .map((rule, index) => {
+      const selector = resolveRuntimeSelector(rule.selector);
+      if (!selector) {
+        return '';
+      }
+
+      const body = Object.entries(rule.declarations)
+        .map(([property, rawValue]) => [property.trim(), rawValue.trim()] as const)
+        .filter(([property, value]) => property.length > 0 && value.length > 0)
+        .map(([property, value]) => `  ${property}: ${value} !important;`)
+        .join('\n');
+
+      if (!body) {
+        return '';
+      }
+
+      return `/* pageaura-style-rule:${op.opId}:${index + 1} */\n${selector} {\n${body}\n}`;
+    })
+    .filter((chunk) => chunk.length > 0)
+    .join('\n');
+};
+
+const executeStylePatch = (op: ApplyStylePatchOp, cleanups: Array<() => void>): void => {
+  if (!op.rules.length) {
+    return;
+  }
+
+  const styleTag = document.createElement('style');
+  styleTag.setAttribute('data-pageaura-style-op', op.opId);
+  styleTag.textContent = compileStyleRulesToCss(op);
+  document.head.append(styleTag);
+
+  cleanups.push(() => {
+    styleTag.remove();
+  });
+};
+
 const runOp = (
   op: RuntimeOp,
   overlayRoot: HTMLElement | null,
@@ -214,6 +290,12 @@ const runOp = (
       if (overlayRoot) {
         executeJumpLinks(op, overlayRoot, cleanups);
       }
+      return overlayRoot;
+    case 'apply_theme_tokens':
+      executeThemePatch(op, cleanups);
+      return overlayRoot;
+    case 'apply_style_patch':
+      executeStylePatch(op, cleanups);
       return overlayRoot;
     default:
       return overlayRoot;
