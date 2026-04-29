@@ -1,0 +1,123 @@
+{
+  "executionId": "execution-plan-snapshot",
+  "sourcePlanId": "plan-snapshot",
+  "generatedAt": "2026-04-28T00:00:00.000Z",
+  "ops": [
+    {
+      "opId": "mount-overlay-root",
+      "opType": "mount_overlay_root",
+      "containerId": "pageaura-overlay-root",
+      "cleanup": [
+        {
+          "cleanupId": "mount-overlay-root:overlay-node",
+          "target": "nodes",
+          "trigger": "before_rerun"
+        }
+      ]
+    },
+    {
+      "opId": "enhancement-1-toolbar-1",
+      "opType": "insert_toolbar",
+      "items": [
+        {
+          "id": "focus-main",
+          "label": "Focus main",
+          "selector": "main",
+          "behavior": "focus"
+        }
+      ],
+      "cleanup": [
+        {
+          "cleanupId": "enhancement-1-toolbar-1:ui-nodes",
+          "target": "nodes",
+          "trigger": "before_rerun"
+        },
+        {
+          "cleanupId": "enhancement-1-toolbar-1:ui-listeners",
+          "target": "listeners",
+          "trigger": "on_dispose"
+        }
+      ]
+    },
+    {
+      "opId": "enhancement-2-jump-1",
+      "opType": "insert_jump_links",
+      "links": [
+        {
+          "id": "section-main",
+          "label": "Main",
+          "selector": "#content"
+        }
+      ],
+      "cleanup": [
+        {
+          "cleanupId": "enhancement-2-jump-1:ui-nodes",
+          "target": "nodes",
+          "trigger": "before_rerun"
+        },
+        {
+          "cleanupId": "enhancement-2-jump-1:ui-listeners",
+          "target": "listeners",
+          "trigger": "on_dispose"
+        }
+      ]
+    },
+    {
+      "opId": "enhancement-3-theme-1",
+      "opType": "apply_theme_tokens",
+      "preset": "dark",
+      "tokens": {
+        "contrast": 1,
+        "fontScale": 1,
+        "spacing": 1,
+        "radius": 1
+      },
+      "cleanup": [
+        {
+          "cleanupId": "enhancement-3-theme-1:styles",
+          "target": "styles",
+          "trigger": "before_rerun"
+        }
+      ]
+    },
+    {
+      "opId": "enhancement-4-style-1",
+      "opType": "apply_style_patch",
+      "rules": [
+        {
+          "selector": ".card",
+          "declarations": {
+            "color": "red",
+            "fontSize": "16px"
+          }
+        }
+      ],
+      "cleanup": [
+        {
+          "cleanupId": "enhancement-4-style-1:styles",
+          "target": "styles",
+          "trigger": "before_rerun"
+        }
+      ]
+    }
+  ],
+  "batches": [
+    {
+      "batchId": "overlay-ui-batch",
+      "mode": "serial",
+      "cleanupBeforeApply": true,
+      "opIds": ["mount-overlay-root", "enhancement-1-toolbar-1", "enhancement-2-jump-1"]
+    },
+    {
+      "batchId": "patch-batch",
+      "mode": "parallel",
+      "cleanupBeforeApply": true,
+      "opIds": ["enhancement-3-theme-1", "enhancement-4-style-1"]
+    }
+  ],
+  "lifecycle": {
+    "strategy": "replace_existing",
+    "cleanupBeforeReapply": true,
+    "supportsSpaNavigation": true
+  }
+}
