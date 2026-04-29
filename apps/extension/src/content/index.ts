@@ -15,14 +15,25 @@ import {
 } from './plannerAdapter';
 import { mockPlanner } from './mockPlanner';
 import { compileRuntimeExecutionPlan } from './compiler';
-import { executeRuntimePlan } from './runtimeExecutor';
+import { cleanupRuntimePlan, executeRuntimePlan } from './runtimeExecutor';
 
 const currentUrl = new URL(window.location.href);
 const eligibility = getPageEligibility(currentUrl);
 let plannerRunInFlight: Promise<void> | null = null;
+let plannerMode: EnhancementMode | null = null;
+let rerunDebounceTimer: number | null = null;
+let pendingRerunReason: string | null = null;
+let lastPlannerStartAt = 0;
+let lastObservedHref = window.location.href;
+let suppressMutationUntil = Date.now();
 
 const PLANNER_TIMEOUT_MS = 5_000;
 const MAX_PLANNER_ATTEMPTS = 2;
+const RERUN_DEBOUNCE_MS = 450;
+const RERUN_COOLDOWN_MS = 900;
+const MUTATION_SUPPRESSION_MS = 600;
+const NAVIGATION_EVENT = 'pageaura:navigation';
+const OVERLAY_SELECTOR = '#pageaura-overlay-root, [data-pageaura-overlay="true"]';
 
 const withTimeout = async <T>(task: Promise<T>, timeoutMs: number): Promise<T> => {
   return await new Promise<T>((resolve, reject) => {
@@ -84,19 +95,35 @@ const persistPlanSummary = async (summary: PlanSummary): Promise<void> => {
   await chrome.runtime.sendMessage(summaryMessage);
 };
 
-const runPlannerPipeline = async (mode: EnhancementMode): Promise<void> => {
+const isRerunReason = (reason: string): boolean => {
+  return reason !== 'initial-bootstrap';
+};
+
+const runPlannerPipeline = async (
+  mode: EnhancementMode,
+  reason: string,
+  cleanupBeforeRun: boolean,
+): Promise<void> => {
   if (plannerRunInFlight) {
     console.info('[PageAura] planner run skipped: already running', {
       hostname: eligibility.hostname,
+      reason,
     });
     return plannerRunInFlight;
   }
 
   plannerRunInFlight = (async () => {
+    lastPlannerStartAt = Date.now();
+
+    if (cleanupBeforeRun) {
+      cleanupRuntimePlan();
+    }
+
     const plannerResult = await runPlannerWithRetry(mode);
     if (!plannerResult.ok) {
       console.warn('[PageAura] planner failed', {
         hostname: eligibility.hostname,
+        reason,
         error: plannerResult.error,
       });
       return;
@@ -113,16 +140,142 @@ const runPlannerPipeline = async (mode: EnhancementMode): Promise<void> => {
 
     const executionPlan = compileRuntimeExecutionPlan(plannerResult.plan);
     executeRuntimePlan(executionPlan);
+    suppressMutationUntil = Date.now() + MUTATION_SUPPRESSION_MS;
 
     console.info('[PageAura] planner completed', {
       hostname: eligibility.hostname,
+      reason,
       summary,
     });
   })().finally(() => {
     plannerRunInFlight = null;
+
+    if (pendingRerunReason && plannerMode) {
+      const nextReason = pendingRerunReason;
+      pendingRerunReason = null;
+      queuePlannerRun(nextReason);
+    }
   });
 
   return plannerRunInFlight;
+};
+
+const queuePlannerRun = (reason: string): void => {
+  if (!plannerMode) {
+    return;
+  }
+
+  pendingRerunReason = reason;
+
+  if (rerunDebounceTimer !== null) {
+    window.clearTimeout(rerunDebounceTimer);
+  }
+
+  rerunDebounceTimer = window.setTimeout(() => {
+    rerunDebounceTimer = null;
+
+    if (!plannerMode || !pendingRerunReason) {
+      return;
+    }
+
+    const scheduledReason = pendingRerunReason;
+    pendingRerunReason = null;
+
+    const elapsed = Date.now() - lastPlannerStartAt;
+    if (elapsed < RERUN_COOLDOWN_MS) {
+      queuePlannerRun(scheduledReason);
+      return;
+    }
+
+    void runPlannerPipeline(plannerMode, scheduledReason, isRerunReason(scheduledReason));
+  }, RERUN_DEBOUNCE_MS);
+};
+
+const isOverlayNode = (node: Node | null): boolean => {
+  if (!node) {
+    return false;
+  }
+
+  if (node instanceof Element) {
+    return node.matches(OVERLAY_SELECTOR) || node.closest(OVERLAY_SELECTOR) !== null;
+  }
+
+  return node.parentElement?.closest(OVERLAY_SELECTOR) !== null;
+};
+
+const shouldTriggerFromMutation = (mutation: MutationRecord): boolean => {
+  if (mutation.type !== 'childList') {
+    return false;
+  }
+
+  if (isOverlayNode(mutation.target)) {
+    return false;
+  }
+
+  for (let index = 0; index < mutation.addedNodes.length; index += 1) {
+    const node = mutation.addedNodes.item(index);
+    if (!isOverlayNode(node)) {
+      return true;
+    }
+  }
+
+  for (let index = 0; index < mutation.removedNodes.length; index += 1) {
+    const node = mutation.removedNodes.item(index);
+    if (!isOverlayNode(node)) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const installNavigationInstrumentation = (): void => {
+  const dispatchNavigationEvent = (): void => {
+    window.dispatchEvent(new Event(NAVIGATION_EVENT));
+  };
+
+  for (const methodName of ['pushState', 'replaceState'] as const) {
+    const originalMethod = history[methodName].bind(history);
+    history[methodName] = (...args: unknown[]) => {
+      const value = (originalMethod as (...callArgs: unknown[]) => unknown)(...args);
+      dispatchNavigationEvent();
+      return value;
+    };
+  }
+
+  const onPotentialRouteChange = (): void => {
+    const nextHref = window.location.href;
+    if (nextHref === lastObservedHref) {
+      return;
+    }
+
+    lastObservedHref = nextHref;
+    queuePlannerRun('spa-route-change');
+  };
+
+  window.addEventListener('popstate', onPotentialRouteChange);
+  window.addEventListener('hashchange', onPotentialRouteChange);
+  window.addEventListener(NAVIGATION_EVENT, onPotentialRouteChange);
+
+  const observer = new MutationObserver((mutations) => {
+    if (Date.now() < suppressMutationUntil) {
+      return;
+    }
+
+    const hasMeaningfulMutation = mutations.some((mutation) => shouldTriggerFromMutation(mutation));
+    if (!hasMeaningfulMutation) {
+      return;
+    }
+
+    queuePlannerRun('dom-mutation');
+  });
+
+  observer.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+  });
+
+  suppressMutationUntil = Date.now() + MUTATION_SUPPRESSION_MS;
 };
 
 const bootstrapMessage: ContentBootstrapMessage = {
@@ -144,5 +297,7 @@ chrome.runtime.sendMessage(bootstrapMessage, (response?: unknown) => {
     return;
   }
 
-  void runPlannerPipeline(typedResponse.mode);
+  plannerMode = typedResponse.mode;
+  installNavigationInstrumentation();
+  queuePlannerRun('initial-bootstrap');
 });
