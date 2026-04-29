@@ -16,7 +16,16 @@ npm install
 npm run build
 npm run lint
 npm run typecheck
+npm run release:zip
 ```
+
+## Core documentation
+
+- Public implementation plan: `docs/PageAura_Public_Parallel_Implementation_Plan.md`
+- Requirements and architecture baseline: `docs/PageAura_Requirements.md`
+- Public package boundaries: `docs/public-package-boundaries.md`
+- Mock planner community demo: `docs/mock-planner-demo.md`
+- Contribution guide: `CONTRIBUTING.md`
 
 ## Local Development Setup for Extension
 
@@ -39,6 +48,7 @@ npm run build:extension
 npm run dev:extension
 npm run typecheck
 npm run lint
+npm run release:zip
 ```
 
 ### Load extension in Chrome

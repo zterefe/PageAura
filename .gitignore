@@ -9,3 +9,5 @@ apps/extension/dist
 packages/*/dist
 
 *.tsbuildinfo
+
+release
