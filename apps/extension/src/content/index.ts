@@ -26,6 +26,7 @@ let pendingRerunReason: string | null = null;
 let lastPlannerStartAt = 0;
 let lastObservedHref = window.location.href;
 let suppressMutationUntil = Date.now();
+let lastDomSignature: string | null = null;
 
 const PLANNER_TIMEOUT_MS = 5_000;
 const MAX_PLANNER_ATTEMPTS = 2;
@@ -34,6 +35,19 @@ const RERUN_COOLDOWN_MS = 900;
 const MUTATION_SUPPRESSION_MS = 600;
 const NAVIGATION_EVENT = 'pageaura:navigation';
 const OVERLAY_SELECTOR = '#pageaura-overlay-root, [data-pageaura-overlay="true"]';
+
+const computeDomSignature = (): string => {
+  const snapshot = createPageSnapshot();
+  const signaturePayload = {
+    href: window.location.href,
+    title: document.title,
+    actionCount: snapshot.actions.length,
+    sectionCount: snapshot.sections.length,
+    metrics: snapshot.metrics,
+  };
+
+  return JSON.stringify(signaturePayload);
+};
 
 const withTimeout = async <T>(task: Promise<T>, timeoutMs: number): Promise<T> => {
   return await new Promise<T>((resolve, reject) => {
@@ -115,11 +129,39 @@ const runPlannerPipeline = async (
   plannerRunInFlight = (async () => {
     lastPlannerStartAt = Date.now();
 
+    if (!getPageEligibility(new URL(window.location.href)).eligible) {
+      console.info('[PageAura] lifecycle no-op: page became ineligible', {
+        hostname: eligibility.hostname,
+        reason,
+      });
+      cleanupRuntimePlan();
+      return;
+    }
+
+    const domSignature = computeDomSignature();
+    if (cleanupBeforeRun && domSignature === lastDomSignature) {
+      console.info('[PageAura] lifecycle skip: DOM signature unchanged', {
+        hostname: eligibility.hostname,
+        reason,
+      });
+      return;
+    }
+
     if (cleanupBeforeRun) {
       cleanupRuntimePlan();
     }
 
-    const plannerResult = await runPlannerWithRetry(mode);
+    let plannerResult;
+    try {
+      plannerResult = await runPlannerWithRetry(mode);
+    } catch (error) {
+      console.warn('[PageAura] lifecycle planner timeout/error handled', {
+        hostname: eligibility.hostname,
+        reason,
+        error,
+      });
+      return;
+    }
     if (!plannerResult.ok) {
       console.warn('[PageAura] planner failed', {
         hostname: eligibility.hostname,
@@ -139,7 +181,17 @@ const runPlannerPipeline = async (
     await persistPlanSummary(summary);
 
     const executionPlan = compileRuntimeExecutionPlan(plannerResult.plan);
-    executeRuntimePlan(executionPlan);
+    const executionResult = executeRuntimePlan(executionPlan);
+    if (!executionResult.ok) {
+      console.warn('[PageAura] lifecycle recovered from partial execution failure', {
+        hostname: eligibility.hostname,
+        reason,
+        failedOpId: executionResult.failedOpId,
+      });
+      return;
+    }
+
+    lastDomSignature = domSignature;
     suppressMutationUntil = Date.now() + MUTATION_SUPPRESSION_MS;
 
     console.info('[PageAura] planner completed', {
