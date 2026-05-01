@@ -4,10 +4,19 @@
   "bodyText": "Documentation article content with many paragraphs and examples to ensure content hinting remains stable for long-form pages.",
   "actionElements": [
     { "tagName": "A", "attributes": { "href": "/guides/intro" }, "textContent": "Introduction" },
-    { "tagName": "A", "attributes": { "href": "/guides/install#requirements" }, "textContent": "Requirements" }
+    {
+      "tagName": "A",
+      "attributes": { "href": "/guides/install#requirements" },
+      "textContent": "Requirements"
+    }
   ],
   "sectionElements": [
-    { "tagName": "MAIN", "attributes": { "id": "article" }, "textContent": "", "headingText": "Install Guide" }
+    {
+      "tagName": "MAIN",
+      "attributes": { "id": "article" },
+      "textContent": "",
+      "headingText": "Install Guide"
+    }
   ],
   "navCount": 1,
   "formCount": 0,

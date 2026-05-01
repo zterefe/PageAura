@@ -3,12 +3,25 @@
   "title": "User Administration",
   "bodyText": "Dense dashboard page with multiple filters, actions, and table rows represented by list-like DOM nodes in this fixture.",
   "actionElements": [
-    { "tagName": "INPUT", "attributes": { "name": "searchUsers", "id": "search-users" }, "textContent": "" },
-    { "tagName": "BUTTON", "attributes": { "id": "bulk-disable" }, "textContent": "Disable selected" },
+    {
+      "tagName": "INPUT",
+      "attributes": { "name": "searchUsers", "id": "search-users" },
+      "textContent": ""
+    },
+    {
+      "tagName": "BUTTON",
+      "attributes": { "id": "bulk-disable" },
+      "textContent": "Disable selected"
+    },
     { "tagName": "A", "attributes": { "href": "/users/42" }, "textContent": "Open user" }
   ],
   "sectionElements": [
-    { "tagName": "SECTION", "attributes": { "id": "user-table" }, "textContent": "", "headingText": "Users" }
+    {
+      "tagName": "SECTION",
+      "attributes": { "id": "user-table" },
+      "textContent": "",
+      "headingText": "Users"
+    }
   ],
   "navCount": 1,
   "formCount": 2,

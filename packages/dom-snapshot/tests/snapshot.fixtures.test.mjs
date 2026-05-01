@@ -199,8 +199,6 @@ test('prefers enabled duplicates and preserves distinct query-link targets', asy
   assert(resultLinks.some((action) => action.href?.includes('?q=beta')));
 });
 
-
-
 test('covers manual QA archetype fixtures for classified, docs, and admin pages', async () => {
   const { createPageSnapshot } = await loadBuiltModule();
 
