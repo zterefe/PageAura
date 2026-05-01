@@ -4,8 +4,10 @@ import type {
   JumpLinkRuntimeItem,
 } from '@pageaura/shared-types';
 
+type InsertJumpLinksOpDraft = Omit<InsertJumpLinksOp, 'cleanup'>;
+
 const normalizeJumpLinks = (
-  links: readonly JumpLinksEnhancement['links'],
+  links: JumpLinksEnhancement['links'],
 ): readonly JumpLinkRuntimeItem[] => {
   return links.map((link) => ({
     id: link.id.trim(),
@@ -17,7 +19,7 @@ const normalizeJumpLinks = (
 export const compileJumpLinks = (
   enhancement: JumpLinksEnhancement,
   opId: string,
-): InsertJumpLinksOp => {
+): InsertJumpLinksOpDraft => {
   return {
     opId,
     opType: 'insert_jump_links',

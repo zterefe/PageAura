@@ -4,8 +4,10 @@ import type {
   ToolbarRuntimeItem,
 } from '@pageaura/shared-types';
 
+type InsertToolbarOpDraft = Omit<InsertToolbarOp, 'cleanup'>;
+
 const normalizeToolbarItems = (
-  items: readonly InsertToolbarEnhancement['items'],
+  items: InsertToolbarEnhancement['items'],
 ): readonly ToolbarRuntimeItem[] => {
   return items.map((item) => ({
     id: item.id.trim(),
@@ -18,7 +20,7 @@ const normalizeToolbarItems = (
 export const compileToolbar = (
   enhancement: InsertToolbarEnhancement,
   opId: string,
-): InsertToolbarOp => {
+): InsertToolbarOpDraft => {
   return {
     opId,
     opType: 'insert_toolbar',

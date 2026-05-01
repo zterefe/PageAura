@@ -2,6 +2,7 @@ import type {
   CleanupRegistrationContract,
   EnhancementPlan,
   EnhancementPlanItem,
+  MountOverlayRootOp,
   RuntimeExecutionPlan,
   RuntimeOp,
   RuntimeOpBatch,
@@ -62,7 +63,11 @@ const buildCleanupContracts = (
   }
 };
 
-const withCleanupContracts = (op: RuntimeOp): RuntimeOp => {
+type RuntimeOpDraft = Omit<RuntimeOp, 'cleanup'>;
+
+const withCleanupContracts = <TOp extends RuntimeOpDraft>(
+  op: TOp,
+): TOp & Pick<RuntimeOp, 'cleanup'> => {
   return {
     ...op,
     cleanup: buildCleanupContracts(op.opId, op.opType),
@@ -132,7 +137,7 @@ const compileRuntimeOps = (plan: EnhancementPlan): readonly RuntimeOp[] => {
     .map((enhancement, index) => compileEnhancement(enhancement, index))
     .filter((op): op is RuntimeOp => op !== null);
 
-  const mountOverlayRootOp = withCleanupContracts({
+  const mountOverlayRootOp = withCleanupContracts<Omit<MountOverlayRootOp, 'cleanup'>>({
     opId: 'mount-overlay-root',
     opType: 'mount_overlay_root',
     containerId: DEFAULT_OVERLAY_CONTAINER_ID,
