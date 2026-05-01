@@ -302,7 +302,12 @@ const runOp = (
   }
 };
 
-export const executeRuntimePlan = (executionPlan: RuntimeExecutionPlan): void => {
+export interface RuntimeExecutionResult {
+  readonly ok: boolean;
+  readonly failedOpId?: string;
+}
+
+export const executeRuntimePlan = (executionPlan: RuntimeExecutionPlan): RuntimeExecutionResult => {
   if (runtimeState) {
     runtimeState.cleanup();
   }
@@ -312,7 +317,26 @@ export const executeRuntimePlan = (executionPlan: RuntimeExecutionPlan): void =>
   let mountContainerId = 'pageaura-overlay-root';
 
   for (const op of executionPlan.ops) {
-    overlayRoot = runOp(op, overlayRoot, cleanups);
+    try {
+      overlayRoot = runOp(op, overlayRoot, cleanups);
+    } catch (error) {
+      console.warn('[PageAura] runtime op failed', {
+        opId: op.opId,
+        opType: op.opType,
+        error,
+      });
+
+      runCleanups(cleanups.slice().reverse());
+      const leftover = document.getElementById(mountContainerId);
+      if (leftover instanceof HTMLElement) {
+        leftover.remove();
+      }
+      runtimeState = null;
+      return {
+        ok: false,
+        failedOpId: op.opId,
+      };
+    }
 
     if (op.opType === 'mount_overlay_root') {
       mountContainerId = op.containerId;
@@ -329,6 +353,8 @@ export const executeRuntimePlan = (executionPlan: RuntimeExecutionPlan): void =>
       runtimeState = null;
     },
   };
+
+  return { ok: true };
 };
 
 export const cleanupRuntimePlan = (): void => {
