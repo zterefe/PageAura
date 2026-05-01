@@ -199,6 +199,25 @@ test('prefers enabled duplicates and preserves distinct query-link targets', asy
   assert(resultLinks.some((action) => action.href?.includes('?q=beta')));
 });
 
+
+
+test('covers manual QA archetype fixtures for classified, docs, and admin pages', async () => {
+  const { createPageSnapshot } = await loadBuiltModule();
+
+  applyFixtureDom(loadFixture('legacy-classified.json'));
+  const classifiedSnapshot = createPageSnapshot();
+  assert(classifiedSnapshot.metadata.pageTypeHints.includes('listing'));
+  assert(classifiedSnapshot.metadata.pageTypeHints.includes('search'));
+
+  applyFixtureDom(loadFixture('docs-article.json'));
+  const docsSnapshot = createPageSnapshot();
+  assert(docsSnapshot.metadata.pageTypeHints.includes('article'));
+
+  applyFixtureDom(loadFixture('admin-table-heavy.json'));
+  const adminSnapshot = createPageSnapshot();
+  assert(adminSnapshot.metadata.pageTypeHints.includes('form'));
+  assert(adminSnapshot.metadata.pageTypeHints.includes('listing'));
+});
 test('logs snapshot output when debug mode is enabled', async () => {
   const { createPageSnapshot } = await loadBuiltModule();
   applyFixtureDom(loadFixture('search-nav.json'));
