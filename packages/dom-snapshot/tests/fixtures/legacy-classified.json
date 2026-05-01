@@ -1,0 +1,18 @@
+{
+  "url": "https://classifieds.example.test/search?query=bicycle",
+  "title": "Community Classifieds - bicycles",
+  "bodyText": "A long and messy classifieds page with repeated markup blocks and lots of category text that exceeds three hundred characters for content fallback behavior. Listings include seller notes, pricing, locations, and shipping terms that pad out this sample fixture body.",
+  "actionElements": [
+    { "tagName": "INPUT", "attributes": { "type": "search", "name": "query", "id": "search_box" }, "textContent": "" },
+    { "tagName": "A", "attributes": { "href": "/posting/123", "class": "result-title" }, "textContent": "Vintage Road Bike" },
+    { "tagName": "A", "attributes": { "href": "/posting/124", "class": "result-title" }, "textContent": "City Commuter Bike" },
+    { "tagName": "BUTTON", "attributes": { "id": "reply-btn" }, "textContent": "reply" }
+  ],
+  "sectionElements": [
+    { "tagName": "SECTION", "attributes": { "id": "results" }, "textContent": "", "headingText": "bicycle classifieds" }
+  ],
+  "navCount": 2,
+  "formCount": 1,
+  "listingCount": 10,
+  "hasArticle": false
+}
