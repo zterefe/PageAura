@@ -21,7 +21,12 @@ const SUPPORTED_ENHANCEMENT_TYPES: readonly EnhancementType[] = [
   'style_patch',
 ];
 
-const THEME_PRESETS: readonly ThemePatchPlan['preset'][] = ['light', 'dark', 'high_contrast', 'soft'];
+const THEME_PRESETS: readonly ThemePatchPlan['preset'][] = [
+  'light',
+  'dark',
+  'high_contrast',
+  'soft',
+];
 
 const BEHAVIOR_TYPES: readonly BehaviorType[] = ['focus', 'scroll', 'click'];
 
@@ -77,7 +82,11 @@ const addRequiredFieldIssue = (issues: ValidationIssue[], path: string, field: s
   });
 };
 
-const validateToolbarItems = (items: unknown, path: string, issues: ValidationIssue[]): ToolbarItemPlan[] => {
+const validateToolbarItems = (
+  items: unknown,
+  path: string,
+  issues: ValidationIssue[],
+): ToolbarItemPlan[] => {
   if (!Array.isArray(items)) {
     issues.push({
       code: 'INVALID_TYPE',
@@ -117,7 +126,11 @@ const validateToolbarItems = (items: unknown, path: string, issues: ValidationIs
         }
       }
 
-      if (!isNonEmptyString(item.id) || !isNonEmptyString(item.label) || !isNonEmptyString(item.selector)) {
+      if (
+        !isNonEmptyString(item.id) ||
+        !isNonEmptyString(item.label) ||
+        !isNonEmptyString(item.selector)
+      ) {
         issues.push({
           code: 'INVALID_FIELD',
           path: itemPath,
@@ -145,7 +158,11 @@ const validateToolbarItems = (items: unknown, path: string, issues: ValidationIs
     .filter((item): item is ToolbarItemPlan => item !== null);
 };
 
-const validateJumpLinks = (links: unknown, path: string, issues: ValidationIssue[]): JumpLinkPlan[] => {
+const validateJumpLinks = (
+  links: unknown,
+  path: string,
+  issues: ValidationIssue[],
+): JumpLinkPlan[] => {
   if (!Array.isArray(links)) {
     issues.push({
       code: 'INVALID_TYPE',
@@ -185,7 +202,11 @@ const validateJumpLinks = (links: unknown, path: string, issues: ValidationIssue
         }
       }
 
-      if (!isNonEmptyString(link.id) || !isNonEmptyString(link.label) || !isNonEmptyString(link.selector)) {
+      if (
+        !isNonEmptyString(link.id) ||
+        !isNonEmptyString(link.label) ||
+        !isNonEmptyString(link.selector)
+      ) {
         issues.push({
           code: 'INVALID_FIELD',
           path: linkPath,
@@ -245,7 +266,9 @@ const validateThemePatch = (
     return null;
   }
 
-  const allTokenValuesAreNumbers = Object.values(patch.tokens).every((value) => typeof value === 'number');
+  const allTokenValuesAreNumbers = Object.values(patch.tokens).every(
+    (value) => typeof value === 'number',
+  );
   if (!allTokenValuesAreNumbers) {
     issues.push({
       code: 'INVALID_TOKEN_VALUE',

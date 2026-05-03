@@ -22,7 +22,7 @@ interface RuntimeState {
 
 let runtimeState: RuntimeState | null = null;
 
-const runCleanups = (cleanups: readonly Array<() => void>): void => {
+const runCleanups = (cleanups: ReadonlyArray<() => void>): void => {
   for (const cleanup of cleanups) {
     try {
       cleanup();

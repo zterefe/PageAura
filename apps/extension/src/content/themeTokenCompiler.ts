@@ -34,7 +34,12 @@ export interface NormalizeThemeTokensResult {
 export const normalizeAndClampThemeTokens = (
   tokens: NumericTokenSet | undefined,
 ): NormalizeThemeTokensResult => {
-  const normalized: Required<NumericTokenSet> = {
+  const normalizedMutable: {
+    contrast: number;
+    fontScale: number;
+    spacing: number;
+    radius: number;
+  } = {
     contrast: normalizeTokenValue(tokens?.contrast, DEFAULT_THEME_TOKENS.contrast),
     fontScale: normalizeTokenValue(tokens?.fontScale, DEFAULT_THEME_TOKENS.fontScale),
     spacing: normalizeTokenValue(tokens?.spacing, DEFAULT_THEME_TOKENS.spacing),
@@ -45,14 +50,16 @@ export const normalizeAndClampThemeTokens = (
 
   for (const tokenName of Object.keys(TOKEN_BOUNDS) as (keyof NumericTokenSet)[]) {
     const bounds = TOKEN_BOUNDS[tokenName];
-    const currentValue = normalized[tokenName];
+    const currentValue = normalizedMutable[tokenName];
     const boundedValue = clamp(currentValue, bounds.min, bounds.max);
 
     if (boundedValue !== currentValue) {
       clamped.push(tokenName);
-      normalized[tokenName] = boundedValue;
+      normalizedMutable[tokenName] = boundedValue;
     }
   }
+
+  const normalized: Required<NumericTokenSet> = normalizedMutable;
 
   return {
     tokens: normalized,

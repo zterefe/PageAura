@@ -55,7 +55,7 @@
 
 ### Status
 
-⏸️ Pending
+✅ Implemented (awaiting review validation)
 
 ---
 
@@ -687,20 +687,21 @@
 
 ### Checklist
 
-- [ ] Add production build pipeline
-- [ ] Add release zip generation
-- [ ] Add README setup and architecture links
-- [ ] Add contribution guide
-- [ ] Add public package boundaries documentation
-- [ ] Add example mock planner demo instructions
+- [x] Add production build pipeline
+- [x] Add release zip generation
+- [x] Add README setup and architecture links
+- [x] Add contribution guide
+- [x] Add public package boundaries documentation
+- [x] Add example mock planner demo instructions
 
 ### Implemented files
 
-- `.github/workflows/*`
+- `.github/workflows/community-build.yml`
+- `scripts/release-zip.mjs`
 - `README.md`
 - `CONTRIBUTING.md`
-- `docs/architecture.md`
-- `docs/contracts.md`
+- `docs/public-package-boundaries.md`
+- `docs/mock-planner-demo.md`
 
 ### Notes
 
@@ -716,7 +717,7 @@
 
 ### Status
 
-⏸️ Pending
+✅ Implemented (awaiting review validation)
 
 ---
 

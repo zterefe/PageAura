@@ -5,6 +5,8 @@ import type {
 } from '@pageaura/shared-types';
 import { resolveRuntimeSelector } from './semanticResolvers';
 
+type ApplyStylePatchOpDraft = Omit<ApplyStylePatchOp, 'cleanup'>;
+
 const normalizeRule = (
   rule: StylePatchEnhancement['patch']['rules'][number],
 ): StylePatchRuntimeRule | null => {
@@ -31,7 +33,7 @@ const normalizeRule = (
 export const compileStylePatch = (
   enhancement: StylePatchEnhancement,
   opId: string,
-): ApplyStylePatchOp => {
+): ApplyStylePatchOpDraft => {
   const rules = enhancement.patch.rules
     .map(normalizeRule)
     .filter((rule): rule is StylePatchRuntimeRule => rule !== null);
