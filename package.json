@@ -15,7 +15,11 @@
     "lint": "prettier --check \"**/*.{ts,tsx,js,cjs,mjs,json,md,yml,yaml}\"",
     "format": "prettier --write \"**/*.{ts,tsx,js,cjs,mjs,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,cjs,mjs,json,md,yml,yaml}\"",
-    "release:zip": "node ./scripts/release-zip.mjs"
+    "release:zip": "node ./scripts/release-zip.mjs",
+    "version:check": "node ./scripts/maintenance/check-extension-version.mjs",
+    "version:bump": "node ./scripts/maintenance/bump-version.mjs",
+    "changelog:check": "node -e \"const fs=require('fs');const c=fs.readFileSync('CHANGELOG.md','utf8');if(!c.includes('## [Unreleased]')){console.error('Missing Unreleased section in CHANGELOG.md');process.exit(1)};console.log('CHANGELOG.md contains Unreleased section');\"",
+    "maintenance:release": "npm run version:check && npm run changelog:check && npm run build:extension && npm run release:zip"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
